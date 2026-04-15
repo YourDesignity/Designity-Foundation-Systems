@@ -1,0 +1,223 @@
+/* Beautiful Animated Lock Screen Design */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #0a0e27;
+}
+
+/* Animated Gradient Background */
+.animated-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-gradient {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 15s ease-in-out infinite;
+}
+
+.gradient-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: -10%;
+  left: -10%;
+  animation-delay: 0s;
+}
+
+.gradient-2 {
+  width: 600px;
+  height: 600px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  bottom: -15%;
+  right: -15%;
+  animation-delay: 5s;
+}
+
+.gradient-3 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  top: 40%;
+  left: 50%;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+/* Glassmorphism Login Card */
+.login-card {
+  position: relative;
+  z-index: 10;
+  width: 450px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin-bottom: 5px !important;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Tabs Styling */
+.login-tabs .ant-tabs-nav {
+  margin-bottom: 20px;
+}
+
+.login-tabs .ant-tabs-tab {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.login-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #ffffff !important;
+}
+
+.login-tabs .ant-tabs-ink-bar {
+  background: #4facfe !important;
+}
+
+.login-tabs .ant-tabs-nav::before {
+  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Form Labels */
+.login-form .ant-form-item-label > label {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.login-form .ant-form-item-explain-error {
+  color: #ff7875;
+}
+
+/* Form Inputs */
+.login-form .ant-input-affix-wrapper,
+.login-form .ant-input {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+}
+
+.login-form .ant-input-affix-wrapper:hover,
+.login-form .ant-input:hover {
+  border-color: #4facfe !important;
+}
+
+.login-form .ant-input-affix-wrapper:focus,
+.login-form .ant-input-affix-wrapper-focused,
+.login-form .ant-input:focus {
+  border-color: #4facfe !important;
+  box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2) !important;
+}
+
+.login-form .ant-input-affix-wrapper .anticon {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.login-form .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.login-form .ant-input-password input {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+.login-form .ant-input-password input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.login-form .ant-input-suffix .anticon {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Checkbox */
+.login-form .ant-checkbox-wrapper {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.login-form .ant-checkbox-inner {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.login-form .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #4facfe;
+  border-color: #4facfe;
+}
+
+/* Button */
+.login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  height: 50px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease !important;
+  color: #ffffff !important;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
+  background: linear-gradient(135deg, #7b8ff5 0%, #8a5fbd 100%) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    padding: 30px 20px;
+  }
+
+  .gradient-1 {
+    width: 300px;
+    height: 300px;
+  }
+
+  .gradient-2 {
+    width: 350px;
+    height: 350px;
+  }
+
+  .gradient-3 {
+    width: 250px;
+    height: 250px;
+  }
+}

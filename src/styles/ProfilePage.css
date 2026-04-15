@@ -1,0 +1,118 @@
+/* src/styles/profilePage.css */
+
+.profile-page-container {
+    padding: 2rem;
+    background-color: #f4f7fa;
+    min-height: 100%;
+}
+
+.status-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #555;
+    padding: 2rem;
+}
+
+.status-message.error {
+    color: #d93025;
+}
+
+.profile-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-card h1 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 2rem;
+}
+
+.profile-section {
+    margin-bottom: 2.5rem;
+}
+
+.profile-section h2 {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: #007bff;
+    font-size: 1.4rem;
+}
+
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.profile-details-grid p {
+    background-color: #f9f9f9;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    margin: 0;
+    font-size: 1rem;
+    color: #444;
+}
+
+.profile-details-grid p strong {
+    color: #333;
+}
+
+.status-Active {
+    color: #1e8e3e; /* Green */
+    font-weight: bold;
+}
+
+.status-inactive {
+    color: #d93025; /* Red */
+    font-weight: bold;
+}
+
+.document-viewer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.document {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.document h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #555;
+    font-size: 1.1rem;
+}
+
+.document img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.document img:hover {
+    transform: scale(1.03);
+}
+
+.no-document {
+    color: #888;
+    padding: 3rem 1rem;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}

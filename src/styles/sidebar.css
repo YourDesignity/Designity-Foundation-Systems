@@ -1,0 +1,36 @@
+/* src/styles/sidebar.css */
+:root {
+  --primary-bg: #27374d;
+  --text-color: #dde6ed;
+  --logo-color: #4caf50;
+  --hover-bg: #3a506b;
+  --active-bg: #0a2540;
+  --sidebar-width: 250px;
+}
+.menu {
+  width: var(--sidebar-width);
+  background-color: var(--primary-bg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky; top: 0; left: 0;
+  flex-shrink: 0; /* Prevents sidebar from shrinking */
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--logo-color); font-size: 1.2em;
+  margin-bottom: 30px;
+}
+.logo-icon { font-size: 1.8rem; }
+.logo h2 { margin: 0; line-height: 1.2; }
+.menu--list { display: flex; flex-direction: column; gap: 15px; }
+.item {
+  display: flex; align-items: center; gap: 15px;
+  padding: 12px 15px; border-radius: 8px;
+  text-decoration: none; color: var(--text-color);
+  transition: all 0.2s ease;
+}
+.item .icon { font-size: 1.4em; }
+.item:hover { background: var(--hover-bg); color: #fff; }
+.item.active { background: var(--active-bg); color: #fff; }
