@@ -638,6 +638,100 @@ class Project(Document):
         await self.save()
 
 
+# =============================================================================
+# 6b. ROLE-BASED CONTRACT MODELS (Phase 1)
+# =============================================================================
+
+class ContractRoleSlot(BaseModel):
+    """
+    Defines a fixed role slot within a Labour contract.
+    e.g., "driver_1" → Driver at 25.0 KWD/day.
+    Multiple slots of the same designation are supported.
+    """
+    slot_id: str                              # Unique within contract, e.g. "driver_1"
+    designation: str                          # Role name, e.g. "Driver", "Cleaner"
+    daily_rate: float                         # Payment per day in KWD
+
+    # Current assignment (can change day to day via DailyRoleFulfillment)
+    current_employee_id: Optional[int] = None
+    current_employee_name: Optional[str] = None
+    assigned_since: Optional[datetime] = None
+
+
+class RoleFulfillmentRecord(BaseModel):
+    """
+    Records which employee filled a specific role slot on a particular day.
+    Embedded inside DailyRoleFulfillment.
+    """
+    slot_id: str
+    designation: str
+    daily_rate: float
+
+    # Primary employee for the slot
+    employee_id: Optional[int] = None
+    employee_name: Optional[str] = None
+    is_filled: bool = False
+
+    # Attendance
+    attendance_status: str = "Absent"  # "Present" | "Absent" | "Leave" | "Late"
+
+    # Replacement/swap details
+    replacement_employee_id: Optional[int] = None
+    replacement_employee_name: Optional[str] = None
+    replacement_reason: Optional[str] = None
+
+    # Financials
+    cost_applied: float = 0.0
+    payment_status: str = "Pending"  # "Pending" | "Paid"
+
+    notes: Optional[str] = None
+
+
+class DailyRoleFulfillment(Document):
+    """
+    Records which employees filled which role slots on a specific work day.
+    One document per (contract_id, date) pair.
+    """
+    uid: int
+
+    contract_id: int               # 🔗 Linked to Contract.uid
+    site_id: int                   # 🔗 Linked to Site.uid
+    date: datetime                 # The work day (stored as midnight datetime)
+
+    role_fulfillments: List[RoleFulfillmentRecord] = []
+
+    # Summary counts
+    total_roles_required: int = 0
+    total_roles_filled: int = 0
+    total_daily_cost: float = 0.0
+
+    # Shortage tracking
+    unfilled_slots: List[str] = []       # slot_ids that were not filled
+    shortage_cost_impact: float = 0.0   # Revenue/cost lost due to unfilled slots
+
+    # Audit
+    recorded_by_manager_id: int
+    recorded_at: datetime = Field(default_factory=datetime.now)
+
+    # Timestamps
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+    @field_validator('date', 'recorded_at', mode='before')
+    @classmethod
+    def coerce_dates(cls, v):
+        return _coerce_date_to_datetime(v)
+
+    class Settings:
+        name = "daily_role_fulfillments"
+        indexes = [
+            "uid",
+            [("contract_id", 1), ("date", -1)],
+            [("site_id", 1), ("date", -1)],
+            "recorded_by_manager_id",
+        ]
+
+
 class Contract(Document):
     """
     Contract entity - linked to a project, defines work period and terms.
@@ -647,6 +741,9 @@ class Contract(Document):
     # Basic Information
     contract_code: str             # e.g., "CNT-001"
     contract_name: Optional[str] = None
+
+    # Contract Type (Phase 1)
+    contract_type: str = "Labour"  # "Labour" | "Goods Supply" | "Equipment Rental"
 
     # Project Linking
     project_id: int                # 🔗 Linked to Project.uid
@@ -679,6 +776,12 @@ class Contract(Document):
     document_path: Optional[str] = None   # Uploaded contract PDF file path
     document_name: Optional[str] = None   # Original filename
 
+    # ===== ROLE-BASED LABOUR FIELDS (Phase 1) =====
+    role_slots: List[ContractRoleSlot] = []    # Fixed role slots for Labour contracts
+    total_daily_cost: float = 0.0              # Sum of all slot daily rates
+    total_role_slots: int = 0                  # Total number of role slots
+    roles_by_designation: Dict[str, int] = {}  # e.g. {"Driver": 5, "Cleaner": 10}
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
@@ -692,7 +795,16 @@ class Contract(Document):
             "project_id",
             "status",
             "end_date",
+            "contract_type",
         ]
+
+    @field_validator('contract_type', mode='before')
+    @classmethod
+    def validate_contract_type(cls, v):
+        allowed = {"Labour", "Goods Supply", "Equipment Rental"}
+        if v not in allowed:
+            raise ValueError(f"contract_type must be one of {sorted(allowed)}, got '{v}'")
+        return v
 
     @field_validator('start_date', 'end_date', mode='before')
     @classmethod
@@ -717,6 +829,15 @@ class Contract(Document):
 
         self.updated_at = datetime.now()
         await self.save()
+
+    def recalculate_role_summary(self) -> None:
+        """Recalculate role slot summary fields from current role_slots list."""
+        self.total_role_slots = len(self.role_slots)
+        self.total_daily_cost = sum(s.daily_rate for s in self.role_slots)
+        counts: Dict[str, int] = {}
+        for slot in self.role_slots:
+            counts[slot.designation] = counts.get(slot.designation, 0) + 1
+        self.roles_by_designation = counts
 
 
 class EmployeeAssignment(Document):

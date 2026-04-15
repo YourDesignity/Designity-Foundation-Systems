@@ -16,6 +16,8 @@ from backend.models import (
     Project, Contract, EmployeeAssignment, TemporaryAssignment,
     # NEW: Material Management
     Material, Supplier, PurchaseOrder, MaterialMovement,
+    # NEW: Role-Based Labour Contracts (Phase 1)
+    DailyRoleFulfillment,
 )
 
 # Load Environment Variables
@@ -59,6 +61,8 @@ async def init_db():
                 Project, Contract, EmployeeAssignment, TemporaryAssignment,
                 # NEW: Material Management
                 Material, Supplier, PurchaseOrder, MaterialMovement,
+                # NEW: Role-Based Labour Contracts (Phase 1)
+                DailyRoleFulfillment,
             ]
         )
         print(f"✅ Connected to MongoDB at {DB_NAME}")
