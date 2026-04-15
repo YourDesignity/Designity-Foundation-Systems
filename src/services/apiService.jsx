@@ -6,7 +6,7 @@ export const API_BASE_URL = 'http://127.0.0.1:8000';
 export const fetchWithAuth = async (endpoint, options = {}) => {
     const token = localStorage.getItem('access_token') || localStorage.getItem('accessToken');
     
-    if (!token && !endpoint.includes('/token')) {
+    if (!token && !endpoint.includes('/token') && !endpoint.includes('/auth/login')) {
         if (window.location.pathname !== '/login') {
             window.location.href = '/login';
         }
