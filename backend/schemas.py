@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import date
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 
 # =============================================================================
 # 1. DESIGNATION SCHEMAS
@@ -285,3 +285,102 @@ class OvertimeCreate(BaseModel):
     date: str
     hours: float
     type: str = "Normal"
+
+# =============================================================================
+# 9. CONTRACT ROLE SCHEMAS (Phase 1 - Role-Based Labour Contracts)
+# =============================================================================
+
+class ContractRoleSlotCreate(BaseModel):
+    """Schema for creating a new role slot in a contract."""
+    slot_id: str
+    designation: str
+    daily_rate: float
+
+class ContractRoleSlotUpdate(BaseModel):
+    """Schema for updating an existing role slot."""
+    designation: Optional[str] = None
+    daily_rate: Optional[float] = None
+    current_employee_id: Optional[int] = None
+    current_employee_name: Optional[str] = None
+
+class ConfigureRoleSlotsRequest(BaseModel):
+    """Request body for POST /contract-roles/configure."""
+    contract_id: int
+    slots: List[ContractRoleSlotCreate]
+
+# =============================================================================
+# 10. DAILY FULFILLMENT SCHEMAS (Phase 1)
+# =============================================================================
+
+class RoleFulfillmentRecordCreate(BaseModel):
+    """Schema for a single role fulfillment record within a daily submission."""
+    slot_id: str
+    designation: str
+    daily_rate: float
+    employee_id: Optional[int] = None
+    employee_name: Optional[str] = None
+    is_filled: bool = False
+    attendance_status: str = "Absent"
+    replacement_employee_id: Optional[int] = None
+    replacement_employee_name: Optional[str] = None
+    replacement_reason: Optional[str] = None
+    cost_applied: float = 0.0
+    payment_status: str = "Pending"
+    notes: Optional[str] = None
+
+    @field_validator('attendance_status')
+    @classmethod
+    def validate_attendance_status(cls, v: str) -> str:
+        allowed = {"Present", "Absent", "Leave", "Late"}
+        if v not in allowed:
+            raise ValueError(f"attendance_status must be one of {sorted(allowed)}, got '{v}'")
+        return v
+
+    @field_validator('payment_status')
+    @classmethod
+    def validate_payment_status(cls, v: str) -> str:
+        allowed = {"Pending", "Paid"}
+        if v not in allowed:
+            raise ValueError(f"payment_status must be one of {sorted(allowed)}, got '{v}'")
+        return v
+
+class DailyFulfillmentCreate(BaseModel):
+    """Request body for POST /daily-fulfillment/record."""
+    contract_id: int
+    site_id: int
+    date: date
+    role_fulfillments: List[RoleFulfillmentRecordCreate]
+    recorded_by_manager_id: int
+
+class DailyFulfillmentUpdate(BaseModel):
+    """Request body for partial updates to an existing fulfillment record."""
+    role_fulfillments: Optional[List[RoleFulfillmentRecordCreate]] = None
+
+class RoleAssignmentRequest(BaseModel):
+    """Request body for assigning an employee to a slot on a specific day."""
+    slot_id: str
+    employee_id: int
+    employee_name: str
+    attendance_status: str = "Present"
+    notes: Optional[str] = None
+
+class SlotSwapRequest(BaseModel):
+    """Request body for swapping the employee filling a slot."""
+    slot_id: str
+    new_employee_id: int
+    new_employee_name: str
+    reason: Optional[str] = None
+
+class MonthlyRoleCostReport(BaseModel):
+    """Response schema for monthly cost aggregation."""
+    contract_id: int
+    month: int
+    year: int
+    total_days_recorded: int
+    total_roles_required: int
+    total_roles_filled: int
+    total_cost: float
+    shortage_cost_impact: float
+    fulfillment_rate: float              # total_roles_filled / total_roles_required (0-1)
+    cost_by_designation: dict            # {"Driver": 1250.0, "Cleaner": 800.0}
+    daily_breakdown: List[dict]          # List of per-day summaries

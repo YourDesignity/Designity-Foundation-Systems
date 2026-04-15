@@ -43,6 +43,7 @@ from backend.routers import (
 from backend.routers import workforce_analytics, project_analytics
 from backend.routers import substitutes, manager_sites
 from backend.routers.materials import router as materials_router, suppliers_router, purchase_orders_router
+from backend.routers import contract_roles, daily_fulfillment
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -316,6 +317,9 @@ app.include_router(manager_sites.router)
 app.include_router(materials_router)
 app.include_router(suppliers_router)
 app.include_router(purchase_orders_router)
+# NEW: Role-Based Labour Contracts (Phase 1)
+app.include_router(contract_roles.router)
+app.include_router(daily_fulfillment.router)
 
 @app.get("/", tags=["Root"])
 def read_root():
