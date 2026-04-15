@@ -5,8 +5,10 @@ export const API_BASE_URL = 'http://127.0.0.1:8000';
 // --- CORE API HELPER ---
 export const fetchWithAuth = async (endpoint, options = {}) => {
     const token = localStorage.getItem('access_token') || localStorage.getItem('accessToken');
+    const publicAuthEndpoints = ['/token', '/auth/login'];
+    const isPublicAuthEndpoint = publicAuthEndpoints.some((path) => endpoint === path || endpoint.startsWith(`${path}?`));
     
-    if (!token && !endpoint.includes('/token')) {
+    if (!token && !isPublicAuthEndpoint) {
         if (window.location.pathname !== '/login') {
             window.location.href = '/login';
         }

@@ -141,17 +141,26 @@ def hash_password(password: str) -> str:
 # =============================================================================
 @app.post("/token", tags=["Authentication"])
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    logger.info(f"AUTH ATTEMPT: Login request for user '{form_data.username}'")
+    return await _create_login_response(form_data.username, form_data.password)
 
-    user = await Admin.find_one(Admin.email == form_data.username)
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+async def _create_login_response(username: str, password: str, include_user: bool = False):
+    logger.info(f"AUTH ATTEMPT: Login request for user '{username}'")
+
+    user = await Admin.find_one(Admin.email == username)
 
     # Truncate password to 72 bytes for bcrypt compatibility
-    password_to_verify = form_data.password
-    if len(password_to_verify.encode('utf-8')) > 72:
-        password_to_verify = password_to_verify.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    password_to_verify = password
+    if len(password_to_verify.encode("utf-8")) > 72:
+        password_to_verify = password_to_verify.encode("utf-8")[:72].decode("utf-8", errors="ignore")
 
     if not user or not pwd_context.verify(password_to_verify, user.hashed_password):
-        logger.warning(f"AUTH FAILED: Invalid credentials for '{form_data.username}'")
+        logger.warning(f"AUTH FAILED: Invalid credentials for '{username}'")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -161,29 +170,41 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="User is inactive")
 
-    # Mapping roles to power levels
     power_level = {"SuperAdmin": 100, "Admin": 50, "Site Manager": 20}.get(user.role, 0)
-    
-    # --- CRITICAL FIX HERE ---
-    # We must include "id": user.uid so the frontend knows who the manager is
     token_data = {
-        "id": user.uid,                   # Added ID to token
+        "id": user.uid,
         "sub": user.email,
         "role": user.role,
         "power": power_level,
-        "perms": user.permissions or [],       
+        "perms": user.permissions or [],
         "sites": user.assigned_site_uids or [],
         "full_name": user.full_name,
         "profile_photo": user.profile_photo,
     }
-    
     access_token = security.create_access_token(
-        data=token_data, 
-        expires_delta=timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+        data=token_data,
+        expires_delta=timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
-    
+
     logger.info(f"AUTH SUCCESS: User '{user.email}' (ID: {user.uid}) logged in.")
-    return {"access_token": access_token, "token_type": "bearer"}
+    response = {"access_token": access_token, "token_type": "bearer"}
+    if include_user:
+        response["user"] = {
+            "uid": user.uid,
+            "email": user.email,
+            "role": user.role,
+            "full_name": user.full_name,
+        }
+    return response
+
+
+@app.post("/auth/login", tags=["Authentication"])
+async def login_with_json(payload: LoginRequest):
+    """
+    JSON login endpoint kept for client compatibility.
+    Accepts {"username", "password"} and returns token + user summary.
+    """
+    return await _create_login_response(payload.username, payload.password, include_user=True)
 
 # =============================================================================
 # 3b. ADMIN REGISTRATION (First-Time Setup)
@@ -718,7 +739,6 @@ if __name__ == "__main__":
 #     import uvicorn
 #     # Note: Updated path to match the file location 'new_backend'
 #     uvicorn.run("new_backend.main:app", host="127.0.0.1", port=8000, reload=True)
-
 
 
 
