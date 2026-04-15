@@ -164,6 +164,8 @@ async def record_daily_fulfillment(
                 )
             filled_employees[rf_data.employee_id] = rf_data.slot_id
 
+        cost_applied = rf_data.daily_rate if rf_data.is_filled else 0.0
+
         records.append(
             RoleFulfillmentRecord(
                 slot_id=rf_data.slot_id,
@@ -176,7 +178,7 @@ async def record_daily_fulfillment(
                 replacement_employee_id=rf_data.replacement_employee_id,
                 replacement_employee_name=rf_data.replacement_employee_name,
                 replacement_reason=rf_data.replacement_reason,
-                cost_applied=rf_data.cost_applied,
+                cost_applied=cost_applied,
                 payment_status=rf_data.payment_status,
                 notes=rf_data.notes,
             )
