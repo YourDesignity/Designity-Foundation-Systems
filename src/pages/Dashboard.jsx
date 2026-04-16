@@ -171,10 +171,10 @@ const Dashboard = () => {
               </div>
             ) : (
               <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                {d.expiring_contracts.map((contract) => {
+                {d.expiring_contracts.map((contract, index) => {
                   const daysLeft = contract.days_remaining ?? contract.days_until_expiry ?? 0;
                   const urgency = daysLeft <= 7 ? 'red' : daysLeft <= 14 ? 'orange' : 'gold';
-                  const contractKey = contract.uid || contract.contract_id || contract.contract_code || contract.contract_name || contract.name;
+                  const contractKey = contract.uid || contract.contract_id || contract.contract_code || contract.contract_name || contract.name || `contract-${index}`;
                   return (
                     <Card key={contractKey} size="small">
                       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
@@ -231,9 +231,9 @@ const Dashboard = () => {
               </div>
             ) : (
               <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                {d.workforce_gaps.map((gap) => {
+                {d.workforce_gaps.map((gap, index) => {
                   const needed = gap.workers_needed ?? gap.gap ?? gap.shortage ?? 0;
-                  const gapKey = gap.uid || gap.site_id || gap.site_code || gap.site_name || gap.site || gap.name;
+                  const gapKey = gap.uid || gap.site_id || gap.site_code || gap.site_name || gap.site || gap.name || `gap-${index}`;
                   return (
                     <Card key={gapKey} size="small">
                       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
