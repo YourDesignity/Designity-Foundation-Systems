@@ -53,6 +53,10 @@ import Dashboard from './pages/Dashboard';
 import WorkforceDashboard from './pages/WorkforceDashboard';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import MyProfile from './pages/MyProfile';
+import RoleContractFulfillmentOverview from './pages/role-contracts';
+import DailyFulfillmentRecord from './pages/role-contracts/DailyFulfillmentRecord';
+import MonthlyReportDashboard from './pages/role-contracts/MonthlyReportDashboard';
+import SlotManagement from './pages/role-contracts/SlotManagement';
 
 // --- DOCUMENT MANAGEMENT & INVENTORY SYSTEM ---
 import EmployeeDocuments from './pages/Employees/EmployeeDocuments';
@@ -133,6 +137,10 @@ const App = () => {
             <Route path="sites/:siteId/assign-employees" element={<EmployeeAssignment />} />
             <Route path="sites/:siteId/workforce" element={<TempWorkerManagement />} />
             <Route path="workflow" element={<WorkflowPage />} />
+            <Route path="role-contracts/fulfillment" element={<RoleContractFulfillmentOverview />} />
+            <Route path="role-contracts/record-daily" element={<DailyFulfillmentRecord />} />
+            <Route path="role-contracts/monthly-report" element={<MonthlyReportDashboard />} />
+            <Route path="role-contracts/manage-slots" element={<SlotManagement />} />
             
             {/* --- NEW FINANCIAL INTEL ROUTE --- */}
             <Route path="finance" element={<FinancePage />} /> {/* <--- ADDED THIS */}
