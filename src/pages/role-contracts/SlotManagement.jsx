@@ -183,7 +183,7 @@ const SlotManagement = () => {
       ) : (
         <Row gutter={[12, 12]}>
           {(record.role_fulfillments || []).map((slot, index) => (
-            <Col xs={24} md={12} lg={8} key={slot.slot_id || `${slot.designation}-${slot.employee_id || 'unfilled'}-${index}`}>
+            <Col xs={24} md={12} lg={8} key={slot.slot_id || `slot-${index}`}>
               <Card
                 title={`${slot.slot_id} (${slot.designation})`}
                 extra={<Tag color={slot.is_filled ? '#10B981' : '#EF4444'}>{slot.is_filled ? 'Filled' : 'Unfilled'}</Tag>}
