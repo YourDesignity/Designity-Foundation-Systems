@@ -208,12 +208,12 @@ const RoleContractFulfillmentOverview = () => {
         <Alert type="info" title="No labour contracts found for current filters." />
       ) : (
         <Row gutter={[12, 12]}>
-          {visibleContracts.map((contract) => {
+          {visibleContracts.map((contract, index) => {
             const record = recordsByContract[contract.contract_id] || {};
             const filledSlots = Number(record.filled ?? contract.total_role_slots ?? 0);
             const siteName = (contract.site_ids || []).map((id) => siteNameById[id]).filter(Boolean).join(', ') || contract.project_name || '—';
             return (
-              <Col key={contract.contract_id || contract.contract_code} xs={24} md={12} lg={8}>
+              <Col key={contract.contract_id ?? contract.contract_code ?? `contract-${index}`} xs={24} md={12} lg={8}>
                 <ContractRoleCard contract={contract} filledSlots={filledSlots} siteName={siteName} />
               </Col>
             );
