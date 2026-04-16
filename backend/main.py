@@ -27,23 +27,34 @@ except ImportError:
 
 # --- Routers ---
 from backend.routers import (
-    admins, attendance, sites, schedules,
-    employees, payslips, roles, designations,
-    duty_list, dashboard, vehicles, contracts,
-    inventory, invoices, finance, messages,
-    managers,
-    manager_attendance,
-    settings,
-    projects,
+    payslips,
+    roles,
+    duty_list,
+    inventory,
     workflow_contracts,
     workflow_sites,
-    assignments,
-    temporary_assignments,
+    workforce_analytics,
+    project_analytics,
+    substitutes,
+    manager_sites,
 )
-from backend.routers import workforce_analytics, project_analytics
-from backend.routers import substitutes, manager_sites
-from backend.routers.materials import router as materials_router, suppliers_router, purchase_orders_router
-from backend.routers import contract_roles, daily_fulfillment
+from backend.routers.admin import admins_router, managers_router, manager_attendance_router
+from backend.routers.hr import (
+    employees_router,
+    employees_download_router,
+    attendance_router,
+    schedules_router,
+    designations_router,
+)
+from backend.routers.projects import projects_router, contracts_router, sites_router
+from backend.routers.assignments import assignments_router, temporary_assignments_router
+from backend.routers.analytics import dashboard_router
+from backend.routers.vehicles import vehicles_router
+from backend.routers.finance import invoices_router, finance_router
+from backend.routers.messaging import messaging_router
+from backend.routers.settings import settings_router
+from backend.routers.materials import materials_router, suppliers_router, purchase_orders_router
+from backend.routers.role_contracts import contract_roles_router, daily_fulfillment_router
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -306,31 +317,31 @@ async def register_first_admin(payload: RegisterAdminRequest):
 # 4. REGISTER ROUTERS
 # =============================================================================
 
-app.include_router(admins.router)
-app.include_router(employees.router)
-app.include_router(employees.download_router)
+app.include_router(admins_router)
+app.include_router(employees_router)
+app.include_router(employees_download_router)
 app.include_router(payslips.router) 
-app.include_router(attendance.router)   
-app.include_router(sites.router)
+app.include_router(attendance_router)
+app.include_router(sites_router)
 app.include_router(roles.router)
-app.include_router(schedules.router)
-app.include_router(designations.router)
+app.include_router(schedules_router)
+app.include_router(designations_router)
 app.include_router(duty_list.router)
-app.include_router(dashboard.router)
-app.include_router(vehicles.router)
-app.include_router(contracts.router)
+app.include_router(dashboard_router)
+app.include_router(vehicles_router)
+app.include_router(contracts_router)
 app.include_router(inventory.router)
-app.include_router(invoices.router)
-app.include_router(finance.router)
-app.include_router(messages.router)
-app.include_router(managers.router)
-app.include_router(manager_attendance.router)
-app.include_router(settings.router)
-app.include_router(projects.router)
+app.include_router(invoices_router)
+app.include_router(finance_router)
+app.include_router(messaging_router)
+app.include_router(managers_router)
+app.include_router(manager_attendance_router)
+app.include_router(settings_router)
+app.include_router(projects_router)
 app.include_router(workflow_contracts.router)
 app.include_router(workflow_sites.router)
-app.include_router(assignments.router)
-app.include_router(temporary_assignments.router)
+app.include_router(assignments_router)
+app.include_router(temporary_assignments_router)
 app.include_router(workforce_analytics.router)
 app.include_router(project_analytics.router)
 app.include_router(substitutes.router)
@@ -339,8 +350,8 @@ app.include_router(materials_router)
 app.include_router(suppliers_router)
 app.include_router(purchase_orders_router)
 # NEW: Role-Based Labour Contracts (Phase 1)
-app.include_router(contract_roles.router)
-app.include_router(daily_fulfillment.router)
+app.include_router(contract_roles_router)
+app.include_router(daily_fulfillment_router)
 
 @app.get("/", tags=["Root"])
 def read_root():
@@ -739,7 +750,6 @@ if __name__ == "__main__":
 #     import uvicorn
 #     # Note: Updated path to match the file location 'new_backend'
 #     uvicorn.run("new_backend.main:app", host="127.0.0.1", port=8000, reload=True)
-
 
 
 
