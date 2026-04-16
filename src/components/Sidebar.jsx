@@ -90,6 +90,7 @@ const Sidebar = () => {
             <NavItem to="/site-management" icon={LuBuilding2} label="Sites" />
             <NavItem to="/project-workflow" icon={LuGitBranch} label="Workflow" />
             <NavItem to="/project-workflow/overview" icon={LuGitBranch} label="Workflow Overview" />
+            <NavItem to="/role-contracts/fulfillment" icon={LuClipboardList} label="Role Contracts" />
           </NavSection>
         )}
 
