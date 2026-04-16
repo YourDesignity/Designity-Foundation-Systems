@@ -174,7 +174,16 @@ const RoleContractFulfillmentOverview = () => {
               style={{ width: '100%' }}
               value={siteFilter}
               onChange={setSiteFilter}
-              options={[{ value: 'all', label: 'All Sites' }, ...sites.map((site) => ({ value: String(site.uid), label: site.name || site.site_name || site.site_code || `Site ${site.uid}` }))]}
+              options={[
+                { value: 'all', label: 'All Sites', key: 'all' },
+                ...sites
+                  .filter((site) => site.uid != null)
+                  .map((site, index) => ({
+                    value: String(site.uid),
+                    label: site.name || site.site_name || site.site_code || `Site ${site.uid}`,
+                    key: site.uid ?? `site-${index}`,
+                  })),
+              ]}
             />
           </Col>
           <Col xs={24} md={6}>
