@@ -97,6 +97,39 @@ async def configure_role_slots(
 
 
 # ---------------------------------------------------------------------------
+# GET /contract-roles/list
+# ---------------------------------------------------------------------------
+
+@router.get("/list")
+async def list_all_contract_roles(
+    current_user: dict = Depends(get_current_active_user),
+):
+    """
+    Return all Labour contracts with their role slot configurations.
+
+    Used by the frontend to display the contract overview screen.
+    """
+    contracts = await Contract.find(Contract.contract_type == "Labour").to_list()
+
+    logger.info(f"Retrieved {len(contracts)} Labour contracts for role list")
+
+    return {
+        "contracts": [
+            {
+                "contract_id": contract.uid,
+                "contract_code": contract.contract_code,
+                "contract_type": contract.contract_type,
+                "total_role_slots": contract.total_role_slots,
+                "total_daily_cost": contract.total_daily_cost,
+                "roles_by_designation": contract.roles_by_designation,
+                "role_slots": [s.model_dump() for s in contract.role_slots],
+            }
+            for contract in contracts
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
 # GET /contract-roles/{contract_id}
 # ---------------------------------------------------------------------------
 
