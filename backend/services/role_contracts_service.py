@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from backend.database import get_next_uid
 from backend.models import DailyRoleFulfillment, RoleFulfillmentRecord
@@ -73,7 +73,7 @@ class RoleContractsService(BaseService):
             )
 
         slot_designation = {s.slot_id: s.designation for s in contract.role_slots}
-        filled_employees: dict[int, str] = {}
+        filled_employees: Dict[int, str] = {}
 
         records: List[RoleFulfillmentRecord] = []
         for rf_data in payload.role_fulfillments:
@@ -254,7 +254,7 @@ class RoleContractsService(BaseService):
         total_shortage = sum(r.shortage_cost_impact for r in records)
         fulfillment_rate = (total_filled / total_required) if total_required > 0 else 0.0
 
-        cost_by_designation: dict = {}
+        cost_by_designation: Dict[str, float] = {}
         for rec in records:
             for rf in rec.role_fulfillments:
                 if rf.is_filled:

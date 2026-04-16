@@ -1,4 +1,4 @@
-"""Daily Role Fulfillment API routes."""
+"""Daily Role Fulfillment API routes for record, assignment, swap, and monthly reporting."""
 
 from fastapi import APIRouter, Depends, status
 

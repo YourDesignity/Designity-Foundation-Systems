@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from typing import List, Optional
 
 from backend.models import Contract
@@ -27,7 +27,7 @@ class ContractService(BaseService):
         return (contract.end_date - contract.start_date).days
 
     async def get_expiring_contracts(self, within_days: int = 30) -> List[Contract]:
-        today = datetime.combine(date.today(), time.min)
+        today = datetime.combine(date.today(), datetime.min.time())
         window_end = today + timedelta(days=within_days)
         return await Contract.find(
             Contract.status == "Active",
