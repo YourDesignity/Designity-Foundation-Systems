@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Row, Col, Card, Statistic, Typography, Button, Space,
-  Spin, Tag, Alert, Progress, List,
+  Spin, Tag, Alert, Progress,
 } from 'antd';
 import {
   ProjectOutlined, TeamOutlined, EnvironmentOutlined,
@@ -43,8 +43,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <Spin size="large" tip="Loading dashboard..." />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <Spin size="large" description="Loading dashboard..." />
       </div>
     );
   }
@@ -79,12 +79,12 @@ const Dashboard = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={12} md={6}>
           <Card size="small" style={{ borderLeft: '4px solid #1890ff', borderRadius: 10 }}>
-            <Statistic
-              title="Total Projects"
-              value={d.total_projects || 0}
-              prefix={<ProjectOutlined style={{ color: '#1890ff' }} />}
-              valueStyle={{ color: '#1890ff', fontSize: 20 }}
-            />
+              <Statistic
+                title="Total Projects"
+                value={d.total_projects || 0}
+                prefix={<ProjectOutlined style={{ color: '#1890ff' }} />}
+                styles={{ content: { color: '#1890ff', fontSize: 20 } }}
+              />
             <Text type="secondary" style={{ fontSize: 11 }}>
               {d.active_projects || 0} active
             </Text>
@@ -93,12 +93,12 @@ const Dashboard = () => {
 
         <Col xs={24} sm={12} md={6}>
           <Card size="small" style={{ borderLeft: '4px solid #52c41a', borderRadius: 10 }}>
-            <Statistic
-              title="Total Sites"
-              value={d.total_sites || 0}
-              prefix={<EnvironmentOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a', fontSize: 20 }}
-            />
+              <Statistic
+                title="Total Sites"
+                value={d.total_sites || 0}
+                prefix={<EnvironmentOutlined style={{ color: '#52c41a' }} />}
+                styles={{ content: { color: '#52c41a', fontSize: 20 } }}
+              />
             <Text type="secondary" style={{ fontSize: 11 }}>
               Across all projects
             </Text>
@@ -107,12 +107,12 @@ const Dashboard = () => {
 
         <Col xs={24} sm={12} md={6}>
           <Card size="small" style={{ borderLeft: '4px solid #722ed1', borderRadius: 10 }}>
-            <Statistic
-              title="Total Employees"
-              value={d.total_employees || 0}
-              prefix={<TeamOutlined style={{ color: '#722ed1' }} />}
-              valueStyle={{ color: '#722ed1', fontSize: 20 }}
-            />
+              <Statistic
+                title="Total Employees"
+                value={d.total_employees || 0}
+                prefix={<TeamOutlined style={{ color: '#722ed1' }} />}
+                styles={{ content: { color: '#722ed1', fontSize: 20 } }}
+              />
             <Text type="secondary" style={{ fontSize: 11 }}>
               {d.assigned_employees || 0} assigned / {d.available_employees || 0} available
             </Text>
@@ -121,13 +121,13 @@ const Dashboard = () => {
 
         <Col xs={24} sm={12} md={6}>
           <Card size="small" style={{ borderLeft: '4px solid #fa8c16', borderRadius: 10 }}>
-            <Statistic
-              title="Workforce Utilization"
-              value={utilizationPct}
-              suffix="%"
-              prefix={<CheckCircleOutlined style={{ color: utilizationPct >= 70 ? '#52c41a' : '#fa8c16' }} />}
-              valueStyle={{ color: utilizationPct >= 70 ? '#52c41a' : '#fa8c16', fontSize: 20 }}
-            />
+              <Statistic
+                title="Workforce Utilization"
+                value={utilizationPct}
+                suffix="%"
+                prefix={<CheckCircleOutlined style={{ color: utilizationPct >= 70 ? '#52c41a' : '#fa8c16' }} />}
+                styles={{ content: { color: utilizationPct >= 70 ? '#52c41a' : '#fa8c16', fontSize: 20 } }}
+              />
             <Progress
               percent={utilizationPct}
               strokeColor={utilizationPct >= 70 ? '#52c41a' : '#fa8c16'}
@@ -170,14 +170,13 @@ const Dashboard = () => {
                 </Text>
               </div>
             ) : (
-              <List
-                size="small"
-                dataSource={d.expiring_contracts}
-                renderItem={(contract) => {
+              <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                {d.expiring_contracts.map((contract) => {
                   const daysLeft = contract.days_remaining ?? contract.days_until_expiry ?? 0;
                   const urgency = daysLeft <= 7 ? 'red' : daysLeft <= 14 ? 'orange' : 'gold';
+                  const contractKey = contract.uid || contract.contract_id || contract.contract_code || contract.contract_name || contract.name;
                   return (
-                    <List.Item>
+                    <Card key={contractKey} size="small">
                       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                         <div>
                           <Text strong style={{ fontSize: 13 }}>
@@ -194,10 +193,10 @@ const Dashboard = () => {
                           {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
                         </Tag>
                       </div>
-                    </List.Item>
+                    </Card>
                   );
-                }}
-              />
+                })}
+              </Space>
             )}
           </Card>
         </Col>
@@ -231,13 +230,12 @@ const Dashboard = () => {
                 </Text>
               </div>
             ) : (
-              <List
-                size="small"
-                dataSource={d.workforce_gaps}
-                renderItem={(gap) => {
+              <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                {d.workforce_gaps.map((gap) => {
                   const needed = gap.workers_needed ?? gap.gap ?? gap.shortage ?? 0;
+                  const gapKey = gap.uid || gap.site_id || gap.site_code || gap.site_name || gap.site || gap.name;
                   return (
-                    <List.Item>
+                    <Card key={gapKey} size="small">
                       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                         <div>
                           <Text strong style={{ fontSize: 13 }}>
@@ -254,10 +252,10 @@ const Dashboard = () => {
                           Needs {needed} worker{needed !== 1 ? 's' : ''}
                         </Tag>
                       </div>
-                    </List.Item>
+                    </Card>
                   );
-                }}
-              />
+                })}
+              </Space>
             )}
           </Card>
         </Col>
@@ -284,8 +282,8 @@ const Dashboard = () => {
               }
             >
               <Row gutter={[12, 12]}>
-                {(d.projects || []).slice(0, 6).map((project, i) => (
-                  <Col xs={24} sm={12} md={8} key={project.id || project.project_id || i}>
+                {(d.projects || []).slice(0, 6).map((project) => (
+                  <Col xs={24} sm={12} md={8} key={project.id || project.project_id || project.uid || project.project_code || project.name || project.project_name}>
                     <Card
                       size="small"
                       style={{

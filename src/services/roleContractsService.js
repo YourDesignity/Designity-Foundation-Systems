@@ -10,7 +10,7 @@ export const getRoleContractsList = async () => {
     return list
       .filter((contract) => contract.contract_type === 'Labour' || Array.isArray(contract.role_slots))
       .map((contract) => ({
-        contract_id: contract.uid,
+        contract_id: contract.uid ?? contract.contract_id ?? contract.id,
         contract_code: contract.contract_code,
         contract_type: contract.contract_type || 'Labour',
         total_role_slots: contract.total_role_slots || contract.role_slots?.length || 0,
