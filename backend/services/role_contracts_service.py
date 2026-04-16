@@ -125,7 +125,7 @@ class RoleContractsService(BaseService):
         self._build_summary(fulfillment)
         await fulfillment.insert()
 
-        logger.info("Daily fulfillment recorded: contract=%s date=%s uid=%s", payload.contract_id, work_date.date(), new_uid)
+        logger.info(f"Daily fulfillment recorded: contract={payload.contract_id} date={work_date.date()} uid={new_uid}")
         return fulfillment.model_dump(mode="json")
 
     async def get_unfilled_slots(self) -> list[dict]:
@@ -172,7 +172,7 @@ class RoleContractsService(BaseService):
         self._build_summary(fulfillment)
         fulfillment.updated_at = datetime.now()
         await fulfillment.save()
-        logger.info("Assigned employee to slot '%s' in fulfillment %d", payload.slot_id, fulfillment_id)
+        logger.info(f"Assigned employee to slot '{payload.slot_id}' in fulfillment {fulfillment_id}")
         return fulfillment.model_dump(mode="json")
 
     async def swap_employee_in_slot(self, fulfillment_id: int, payload: SlotSwapRequest) -> dict:
@@ -213,7 +213,7 @@ class RoleContractsService(BaseService):
         self._build_summary(fulfillment)
         fulfillment.updated_at = datetime.now()
         await fulfillment.save()
-        logger.info("Swapped employee in slot '%s' for fulfillment %d", payload.slot_id, fulfillment_id)
+        logger.info(f"Swapped employee in slot '{payload.slot_id}' for fulfillment {fulfillment_id}")
         return fulfillment.model_dump(mode="json")
 
     async def get_monthly_cost_report(self, contract_id: int, month: int, year: int) -> MonthlyRoleCostReport:

@@ -28,7 +28,9 @@ async def record_daily_fulfillment(
 
 
 @router.get("/unfilled")
-async def get_unfilled_slots():
+async def get_unfilled_slots(
+    current_user: dict = Depends(get_current_active_user),
+):
     return await service.get_unfilled_slots()
 
 
@@ -36,6 +38,7 @@ async def get_unfilled_slots():
 async def get_daily_fulfillment(
     contract_id: int,
     date_str: str,
+    current_user: dict = Depends(get_current_active_user),
 ):
     return await service.get_daily_fulfillment(contract_id, date_str)
 
@@ -44,6 +47,7 @@ async def get_daily_fulfillment(
 async def assign_employee_to_slot(
     fulfillment_id: int,
     payload: RoleAssignmentRequest,
+    current_user: dict = Depends(get_current_active_user),
 ):
     return await service.assign_employee_to_slot(fulfillment_id, payload)
 
@@ -52,6 +56,7 @@ async def assign_employee_to_slot(
 async def swap_employee_in_slot(
     fulfillment_id: int,
     payload: SlotSwapRequest,
+    current_user: dict = Depends(get_current_active_user),
 ):
     return await service.swap_employee_in_slot(fulfillment_id, payload)
 
@@ -61,5 +66,6 @@ async def get_monthly_cost_report(
     contract_id: int,
     month: int,
     year: int,
+    current_user: dict = Depends(get_current_active_user),
 ):
     return await service.get_monthly_cost_report(contract_id, month, year)
