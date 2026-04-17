@@ -14,6 +14,12 @@ logger = logging.getLogger("MainApp")
 class AdminService(BaseService):
     """Business logic for admin lifecycle and authentication."""
 
+    @staticmethod
+    def _validate_bcrypt_password_length(password: str) -> None:
+        """Reject passwords exceeding bcrypt's 72-byte effective input limit."""
+        if len(password.encode("utf-8")) > 72:
+            raise ValueError("Password exceeds bcrypt limit of 72 UTF-8 bytes")
+
     async def create_admin(self, payload: Any, current_user: Optional[dict] = None):
         """
         Create a new admin account.
@@ -73,6 +79,10 @@ class AdminService(BaseService):
         password = data.get("password")
         if not password:
             self.raise_bad_request("Password is required")
+        try:
+            self._validate_bcrypt_password_length(password)
+        except ValueError as exc:
+            self.raise_bad_request(str(exc))
 
         new_uid = await self.get_next_uid("admins")
         new_admin = Admin(
@@ -139,9 +149,16 @@ class AdminService(BaseService):
         from backend.security import verify_password
 
         user = await Admin.find_one(Admin.email == username)
-        password_to_verify = password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
+        try:
+            self._validate_bcrypt_password_length(password)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-        if not user or not verify_password(password_to_verify, user.hashed_password):
+        if not user or not verify_password(password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
@@ -207,6 +224,10 @@ class AdminService(BaseService):
 
         if current_password and not verify_password(current_password, admin.hashed_password):
             self.raise_bad_request("Current password is incorrect")
+        try:
+            self._validate_bcrypt_password_length(new_password)
+        except ValueError as exc:
+            self.raise_bad_request(str(exc))
 
         admin.hashed_password = get_password_hash(new_password)
         await admin.save()

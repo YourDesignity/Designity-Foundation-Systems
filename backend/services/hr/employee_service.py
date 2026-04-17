@@ -135,7 +135,7 @@ class EmployeeService(BaseService):
                 setattr(employee, key, value)
 
         await employee.save()
-        logger.info("Employee updated: ID %s", employee_id)
+        logger.info("Employee updated")
         return employee
 
     async def search_employees(
@@ -196,7 +196,8 @@ class EmployeeService(BaseService):
         - within_days must be non-negative
 
         Args:
-            within_days: Days-ahead window
+            within_days: Non-negative days-ahead window
+                        (0 returns documents expiring today)
 
         Returns:
             List of expiring document summary rows
@@ -204,7 +205,7 @@ class EmployeeService(BaseService):
         from backend.models import Employee
 
         if within_days < 0:
-            self.raise_bad_request("within_days must be >= 0")
+            self.raise_bad_request("within_days must be non-negative")
 
         now = datetime.combine(date.today(), datetime.min.time())
         window_end = now + timedelta(days=within_days)
@@ -255,7 +256,7 @@ class EmployeeService(BaseService):
     async def delete_employee(self, employee_id: int) -> bool:
         employee = await self.get_employee_by_id(employee_id)
         await employee.delete()
-        logger.info("Employee deleted: ID %s", employee_id)
+        logger.info("Employee deleted")
         return True
 
     async def validate_designation(self, employee_id: int, expected_designation: str, detail_prefix: str):

@@ -45,6 +45,10 @@ class ManagerService(BaseService):
         if not data.get("password"):
             self.raise_bad_request("Password is required")
 
+        creator_id = created_by_admin_id if created_by_admin_id is not None else data.get("created_by_admin_id")
+        if creator_id is None:
+            self.raise_bad_request("created_by_admin_id is required")
+
         assigned_sites = data.get("assigned_site_uids") or data.get("site_uids") or []
         admin_uid = await self.get_next_uid("admins")
         admin = Admin(
@@ -93,7 +97,7 @@ class ManagerService(BaseService):
             nationality=data.get("nationality"),
             passport_number=data.get("passport_number"),
             civil_id=data.get("civil_id"),
-            created_by_admin_id=created_by_admin_id or data.get("created_by_admin_id") or 0,
+            created_by_admin_id=creator_id,
         )
         await profile.insert()
 

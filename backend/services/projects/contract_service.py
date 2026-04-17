@@ -121,7 +121,8 @@ class ContractService(BaseService):
         Get active contracts expiring within a time window.
 
         Args:
-            within_days: Positive number of days from today
+            within_days: Non-negative number of days from today
+                         (0 returns contracts expiring today)
 
         Returns:
             List of expiring contracts
@@ -129,7 +130,7 @@ class ContractService(BaseService):
         from backend.models import Contract
 
         if within_days < 0:
-            self.raise_bad_request("within_days must be >= 0")
+            self.raise_bad_request("within_days must be non-negative")
 
         today = datetime.combine(date.today(), datetime.min.time())
         window_end = today + timedelta(days=within_days)

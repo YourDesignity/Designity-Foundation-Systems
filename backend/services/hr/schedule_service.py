@@ -104,7 +104,7 @@ class ScheduleService(BaseService):
 
         schedule.employee_uid = employee_id
         await schedule.save()
-        logger.info("Schedule %s assigned to employee %s", schedule_id, employee_id)
+        logger.info("Schedule assignment updated")
         return schedule
 
     async def swap_shifts(self, first_schedule_id: int, second_schedule_id: int) -> dict:

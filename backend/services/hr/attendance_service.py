@@ -60,11 +60,13 @@ class AttendanceService(BaseService):
                 self.raise_bad_request("Cannot mark attendance for future dates")
 
             site_uid = record.get("site_uid")
-            existing = await Attendance.find_one(
+            existing_filters = [
                 Attendance.employee_uid == employee_uid,
                 Attendance.date == work_date,
-                *( [Attendance.site_uid == site_uid] if site_uid is not None else [] ),
-            )
+            ]
+            if site_uid is not None:
+                existing_filters.append(Attendance.site_uid == site_uid)
+            existing = await Attendance.find_one(*existing_filters)
             if existing:
                 existing.status = record.get("status", existing.status)
                 existing.shift = record.get("shift", existing.shift)
