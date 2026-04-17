@@ -7,6 +7,7 @@ from typing import Any, Optional
 from backend.services.base_service import BaseService
 
 logger = logging.getLogger("MainApp")
+INVOICE_NUMBER_OFFSET = 1000
 
 
 class InvoiceService(BaseService):
@@ -89,7 +90,7 @@ class InvoiceService(BaseService):
                 self.raise_not_found("Contract not found")
 
         new_uid = await self.get_next_uid("invoices")
-        invoice_no = data.get("invoice_no") or f"INV-{invoice_date.year}-{1000 + new_uid}"
+        invoice_no = data.get("invoice_no") or f"INV-{invoice_date.year}-{INVOICE_NUMBER_OFFSET + new_uid}"
 
         existing = await Invoice.find_one(Invoice.invoice_no == invoice_no)
         if existing:
