@@ -113,7 +113,7 @@ class DashboardService(BaseService):
         overdue_invoices = await InvoiceService().get_overdue_invoices()
         unfilled_slots = await RoleContractsService().get_unfilled_slots()
         materials = await Material.find_all().to_list()
-        low_stock = [row for row in materials if row.current_stock <= row.minimum_stock]
+        low_stock = [row for row in materials if row.current_stock < row.minimum_stock]
 
         return {
             "unfilled_slots": len(unfilled_slots),

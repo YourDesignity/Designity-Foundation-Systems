@@ -63,14 +63,12 @@ class FinancialAnalyticsService(BaseService):
         from backend.models import Contract, Invoice
 
         contracts = await Contract.find(Contract.status == "Active").to_list()
+        paid_invoices = [row for row in await Invoice.find(Invoice.status == "Paid").to_list()]
         analytics: list[dict] = []
 
         for contract in contracts:
             contract_revenue = 0.0
-            invoices = await Invoice.find_all().to_list()
-            for invoice in invoices:
-                if invoice.status != "Paid":
-                    continue
+            for invoice in paid_invoices:
                 if invoice.project_uid == contract.project_id or (invoice.specs or {}).get("contract_id") == contract.uid:
                     contract_revenue += float(invoice.total_amount or 0)
 

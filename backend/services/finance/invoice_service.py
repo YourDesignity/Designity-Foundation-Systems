@@ -302,12 +302,13 @@ class InvoiceService(BaseService):
         if not contract:
             self.raise_not_found("Contract not found")
 
-        invoices = await Invoice.find_all().sort("-created_at").to_list()
-        return [
-            inv
-            for inv in invoices
-            if (inv.specs or {}).get("contract_id") == contract_id or inv.project_uid == contract.project_id
-        ]
+        by_project = await Invoice.find(Invoice.project_uid == contract.project_id).sort("-created_at").to_list()
+        by_contract_spec = await Invoice.find({"specs.contract_id": contract_id}).sort("-created_at").to_list()
+
+        merged: dict[int, Any] = {}
+        for inv in by_project + by_contract_spec:
+            merged[inv.uid] = inv
+        return sorted(merged.values(), key=lambda row: row.created_at, reverse=True)
 
     async def calculate_outstanding_amount(self, contract_id: Optional[int] = None) -> float:
         """Calculate total unpaid amount, optionally scoped to a contract."""
