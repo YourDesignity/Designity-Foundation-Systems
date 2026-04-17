@@ -96,7 +96,7 @@ class TripLogService(BaseService):
             vehicle.updated_at = datetime.now()
             await vehicle.save()
 
-        logger.info("Trip ended: %s distance=%.2f", trip_id, trip.end_mileage - trip.start_mileage)
+        logger.info("Trip ended: %s", trip_id)
         return trip
 
     async def record_trip(

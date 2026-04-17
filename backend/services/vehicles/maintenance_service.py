@@ -131,7 +131,7 @@ class MaintenanceService(BaseService):
         overdue = []
         for row in rows:
             due_date = self._parse_iso_day(row.next_due_date)
-            if due_date and due_date < today:
+            if due_date and due_date <= today:
                 overdue.append(row)
         return sorted(overdue, key=lambda item: item.next_due_date or "")
 
