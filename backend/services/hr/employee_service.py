@@ -29,9 +29,6 @@ class EmployeeService(BaseService):
             self.raise_not_found(f"Employee {employee_id} not found")
         return employee
 
-    async def ensure_employee(self, employee_id: int):
-        return await self.get_employee_by_id(employee_id)
-
     async def get_employees(self):
         from backend.models import Employee
 
