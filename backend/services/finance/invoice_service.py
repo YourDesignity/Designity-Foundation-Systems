@@ -265,10 +265,8 @@ class InvoiceService(BaseService):
 
     async def get_unpaid_invoices(self) -> list:
         """Return all unpaid/sent/overdue invoices sorted by due date."""
-        from backend.models import Invoice
-
-        invoices = await Invoice.find(Invoice.status != "Paid", Invoice.status != "Voided").sort("+due_date").to_list()
-        return invoices
+        invoices = await self.get_invoices()
+        return [inv for inv in invoices if inv.status not in {"Paid", "Voided"}]
 
     async def get_overdue_invoices(self, as_of_date: Optional[Any] = None) -> list:
         """Return unpaid invoices whose due_date is before the given date."""

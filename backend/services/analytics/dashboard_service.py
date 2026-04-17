@@ -105,7 +105,7 @@ class DashboardService(BaseService):
         }
 
     async def get_dashboard_alerts(self) -> dict:
-        """Get operational alerts (unfilled slots, overdue invoices, low stock)."""
+        """Get operational alerts (unfilled slots, overdue invoices, low stock at/below threshold)."""
         from backend.models import Material
         from backend.services.finance.invoice_service import InvoiceService
         from backend.services.role_contracts_service import RoleContractsService

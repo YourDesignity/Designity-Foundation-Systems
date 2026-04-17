@@ -145,6 +145,10 @@ class ReportingService(BaseService):
 
         Returns:
             CSV content as UTF-8 text
+
+        Notes:
+            This helper builds the CSV in memory and is intended for
+            dashboard/report-sized datasets.
         """
         rows_list = list(rows)
         if not rows_list:
