@@ -30,7 +30,7 @@ class DutyListService(BaseService):
             if employee:
                 employee.manager_id = manager_id
                 await employee.save()
-                logger.info("Employee %s permanently assigned to Manager %s", employee_id, manager_id)
+                logger.info("Updated employee manager mapping for duty assignment")
 
             existing = await DutyAssignment.find_one(
                 DutyAssignment.employee_id == employee_id
@@ -42,7 +42,7 @@ class DutyListService(BaseService):
                 existing.start_date = start_date
                 existing.end_date = end_date
                 await existing.save()
-                logger.info("Updated duty assignment for Employee %s", employee_id)
+                logger.info("Updated existing duty assignment record")
             else:
                 new_duty = DutyAssignment(
                     employee_id=employee_id,
@@ -52,7 +52,7 @@ class DutyListService(BaseService):
                     end_date=end_date,
                 )
                 await new_duty.insert()
-                logger.info("Created new duty assignment for Employee %s", employee_id)
+                logger.info("Created new duty assignment record")
 
         return {"message": "Duty assigned to employees successfully"}
 
@@ -63,7 +63,7 @@ class DutyListService(BaseService):
         user_email = current_user.get("sub")
 
         if user_role not in ["SuperAdmin", "Admin", "Site Manager"]:
-            self.raise_forbidden("Access denied")
+            self.raise_forbidden("Only SuperAdmin, Admin, and Site Manager roles can access duty lists")
 
         me = await Admin.find_one(Admin.email == user_email)
 

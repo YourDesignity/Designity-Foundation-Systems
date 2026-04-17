@@ -72,7 +72,9 @@ class SubstituteService(BaseService):
         if employee.employee_type != "Outsourced":
             self.raise_bad_request("Only Outsourced employees can be assigned as substitutes")
         if employee.substitute_availability and employee.substitute_availability != "available":
-            self.raise_bad_request("Employee is not available")
+            self.raise_bad_request(
+                f"Employee is not available (current status: {employee.substitute_availability})"
+            )
         if employee.current_substitute_assignment and employee.current_substitute_assignment.status == "Active":
             self.raise_bad_request("Employee is already on an active substitute assignment")
 
@@ -142,7 +144,7 @@ class SubstituteService(BaseService):
         )
         await temp_assignment.insert()
 
-        logger.info("Substitute %s assigned to site %s for reason: %s", employee.name, site.name, reason)
+        logger.info("Substitute assignment created successfully")
 
         return {
             "message": "Substitute assigned successfully",
