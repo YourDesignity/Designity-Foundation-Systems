@@ -203,3 +203,282 @@ class ManagerAttendanceService(BaseService):
                 "absent_days": len([r for r in records if r.day_status == "Absent"]),
             },
         }
+
+    async def get_my_attendance_config(self, current_user: dict) -> dict:
+        """Get current manager attendance config."""
+        from backend.models import Admin
+
+        me = await Admin.find_one(Admin.email == current_user.get("sub"))
+        if not me or me.role != "Site Manager":
+            self.raise_forbidden("Only Site Managers can access this endpoint")
+
+        config = await self._get_or_create_config(me.uid)
+        return {
+            "manager_id": me.uid,
+            "morning_enabled": config.morning_enabled,
+            "morning_window_start": config.morning_window_start if config.morning_enabled else None,
+            "morning_window_end": config.morning_window_end if config.morning_enabled else None,
+            "afternoon_enabled": config.afternoon_enabled,
+            "afternoon_window_start": config.afternoon_window_start if config.afternoon_enabled else None,
+            "afternoon_window_end": config.afternoon_window_end if config.afternoon_enabled else None,
+            "evening_enabled": config.evening_enabled,
+            "evening_window_start": config.evening_window_start if config.evening_enabled else None,
+            "evening_window_end": config.evening_window_end if config.evening_enabled else None,
+            "require_all_segments": config.require_all_segments,
+        }
+
+    async def manager_check_in(self, segment: str, current_user: dict) -> dict:
+        """Manager self check-in for segment."""
+        from backend.models import Admin, ManagerAttendanceConfig
+
+        me = await Admin.find_one(Admin.email == current_user.get("sub"))
+        if not me or me.role != "Site Manager":
+            self.raise_forbidden("Only Site Managers can check in")
+
+        config = await ManagerAttendanceConfig.find_one(ManagerAttendanceConfig.manager_id == me.uid)
+        if not config:
+            self.raise_not_found("Attendance configuration not found")
+
+        result = await self.record_check_in(manager_id=me.uid, segment=segment)
+        return {
+            "message": f"{segment.capitalize()} check-in successful",
+            "check_in_time": result["check_time"],
+            "status": result["segment_status"],
+            "day_status": result["day_status"],
+        }
+
+    async def get_my_today_attendance(self, current_user: dict) -> dict:
+        """Get current manager's today attendance."""
+        from backend.models import Admin, ManagerAttendance
+
+        me = await Admin.find_one(Admin.email == current_user.get("sub"))
+        if not me or me.role != "Site Manager":
+            self.raise_forbidden("Only Site Managers can access this endpoint")
+
+        today = datetime.now().date()
+        attendance = await ManagerAttendance.find_one(
+            ManagerAttendance.manager_id == me.uid,
+            ManagerAttendance.date == today,
+        )
+
+        if not attendance:
+            return {
+                "date": today.isoformat(),
+                "day_status": "Pending",
+                "morning_check_in": None,
+                "morning_status": None,
+                "afternoon_check_in": None,
+                "afternoon_status": None,
+                "evening_check_in": None,
+                "evening_status": None,
+                "is_overridden": False,
+            }
+
+        return {
+            "date": attendance.date.isoformat(),
+            "day_status": attendance.day_status,
+            "morning_check_in": attendance.morning_check_in.isoformat() if attendance.morning_check_in else None,
+            "morning_status": attendance.morning_status,
+            "afternoon_check_in": attendance.afternoon_check_in.isoformat() if attendance.afternoon_check_in else None,
+            "afternoon_status": attendance.afternoon_status,
+            "evening_check_in": attendance.evening_check_out.isoformat() if attendance.evening_check_out else None,
+            "evening_status": attendance.evening_status,
+            "notes": attendance.notes,
+            "is_overridden": attendance.is_overridden,
+        }
+
+    async def get_my_attendance_history(
+        self,
+        current_user: dict,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+    ) -> dict:
+        """Get manager self attendance history."""
+        from backend.models import Admin, ManagerAttendance
+
+        me = await Admin.find_one(Admin.email == current_user.get("sub"))
+        if not me or me.role != "Site Manager":
+            self.raise_forbidden("Only Site Managers can access this endpoint")
+
+        start = datetime.strptime(start_date, "%Y-%m-%d").date() if start_date else datetime.now().date().replace(day=1)
+        end = datetime.strptime(end_date, "%Y-%m-%d").date() if end_date else datetime.now().date()
+
+        records = await ManagerAttendance.find(
+            ManagerAttendance.manager_id == me.uid,
+            ManagerAttendance.date >= start,
+            ManagerAttendance.date <= end,
+        ).sort(-ManagerAttendance.date).to_list()
+
+        result = [
+            {
+                "date": record.date.isoformat(),
+                "day_status": record.day_status,
+                "morning_check_in": record.morning_check_in.isoformat() if record.morning_check_in else None,
+                "morning_status": record.morning_status,
+                "afternoon_check_in": record.afternoon_check_in.isoformat() if record.afternoon_check_in else None,
+                "afternoon_status": record.afternoon_status,
+                "evening_check_in": record.evening_check_out.isoformat() if record.evening_check_out else None,
+                "evening_status": record.evening_status,
+                "is_overridden": record.is_overridden,
+            }
+            for record in records
+        ]
+
+        return {
+            "records": result,
+            "summary": {
+                "total_days": len(records),
+                "full_days": len([r for r in records if r.day_status == "Full Day"]),
+                "partial_days": len([r for r in records if r.day_status == "Partial"]),
+                "absent_days": len([r for r in records if r.day_status == "Absent"]),
+            },
+        }
+
+    async def get_all_managers_attendance(self, current_user: dict, date_str: Optional[str] = None) -> list[dict]:
+        """Get all managers attendance for a target date."""
+        from backend.models import Admin, ManagerAttendance
+
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can access this endpoint")
+
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else datetime.now().date()
+        managers = await Admin.find({"role": "Site Manager", "is_active": True}).to_list()
+
+        result = []
+        for manager in managers:
+            attendance = await ManagerAttendance.find_one(
+                ManagerAttendance.manager_id == manager.uid,
+                ManagerAttendance.date == target_date,
+            )
+            result.append(
+                {
+                    "manager_id": manager.uid,
+                    "manager_name": manager.full_name,
+                    "day_status": attendance.day_status if attendance else "Pending",
+                    "morning": {
+                        "time": attendance.morning_check_in.strftime("%H:%M") if attendance and attendance.morning_check_in else None,
+                        "status": attendance.morning_status if attendance else None,
+                        "key": "morning",
+                    },
+                    "afternoon": {
+                        "time": attendance.afternoon_check_in.strftime("%H:%M")
+                        if attendance and attendance.afternoon_check_in
+                        else None,
+                        "status": attendance.afternoon_status if attendance else None,
+                        "key": "afternoon",
+                    },
+                    "evening": {
+                        "time": attendance.evening_check_out.strftime("%H:%M") if attendance and attendance.evening_check_out else None,
+                        "status": attendance.evening_status if attendance else None,
+                        "key": "evening",
+                    },
+                }
+            )
+        return result
+
+    async def override_manager_attendance(self, payload: Any, current_user: dict) -> dict:
+        """Override one manager attendance segment."""
+        from backend.models import ManagerAttendance, ManagerAttendanceConfig
+
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can override attendance")
+
+        data = payload.model_dump(exclude_unset=True) if hasattr(payload, "model_dump") else dict(payload)
+        segment = data.get("segment")
+        if segment not in ["morning", "afternoon", "evening"]:
+            self.raise_bad_request("Invalid segment")
+
+        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
+        attendance = await ManagerAttendance.find_one(
+            ManagerAttendance.manager_id == data["manager_id"],
+            ManagerAttendance.date == target_date,
+        )
+        if not attendance:
+            attendance = ManagerAttendance(
+                uid=await self.get_next_uid("manager_attendance"),
+                manager_id=data["manager_id"],
+                date=target_date,
+            )
+
+        check_in_time = data.get("check_in_time")
+        if check_in_time:
+            check_in_dt = datetime.combine(target_date, datetime.strptime(check_in_time, "%H:%M").time())
+            setattr(attendance, self._get_check_in_field(segment), check_in_dt)
+
+        setattr(attendance, f"{segment}_status", data["status"])
+        attendance.is_overridden = True
+        attendance.overridden_by_admin_id = current_user.get("id")
+        attendance.override_reason = data["reason"]
+        attendance.override_timestamp = datetime.now()
+        attendance.updated_at = datetime.now()
+
+        config = await ManagerAttendanceConfig.find_one(ManagerAttendanceConfig.manager_id == data["manager_id"])
+        if config:
+            attendance.day_status = self._calculate_day_status(attendance, config)
+
+        await attendance.save()
+        return {"message": "Attendance overridden successfully"}
+
+    async def update_manager_attendance_config(self, manager_id: int, payload: Any, current_user: dict) -> dict:
+        """Update manager attendance config."""
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can update attendance configuration")
+
+        config = await self._get_or_create_config(manager_id, configured_by=current_user.get("id", 1))
+        update_data = payload.model_dump(exclude_unset=True) if hasattr(payload, "model_dump") else dict(payload)
+
+        for segment in ["morning", "afternoon", "evening"]:
+            seg_data = update_data.get(segment)
+            if seg_data is not None:
+                if "enabled" in seg_data:
+                    setattr(config, f"{segment}_enabled", seg_data["enabled"])
+                if "start_time" in seg_data and seg_data["start_time"] is not None:
+                    setattr(config, f"{segment}_window_start", seg_data["start_time"])
+                if "end_time" in seg_data and seg_data["end_time"] is not None:
+                    setattr(config, f"{segment}_window_end", seg_data["end_time"])
+        if "require_all_segments" in update_data:
+            config.require_all_segments = update_data["require_all_segments"]
+
+        config.configured_by_admin_id = current_user.get("id", 1)
+        config.updated_at = datetime.now()
+        await config.save()
+        return {"message": "Attendance configuration updated successfully"}
+
+    async def get_manager_attendance_config(self, manager_id: int, current_user: dict) -> dict:
+        """Get manager attendance config for admins."""
+        from backend.models import ManagerAttendanceConfig
+
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can view attendance configuration")
+
+        config = await ManagerAttendanceConfig.find_one(ManagerAttendanceConfig.manager_id == manager_id)
+        if not config:
+            return {
+                "manager_id": manager_id,
+                "require_all_segments": True,
+                "morning": {"enabled": True, "start_time": "08:00", "end_time": "09:30"},
+                "afternoon": {"enabled": True, "start_time": "13:00", "end_time": "14:00"},
+                "evening": {"enabled": True, "start_time": "17:00", "end_time": "18:30"},
+            }
+
+        return {
+            "manager_id": manager_id,
+            "require_all_segments": config.require_all_segments,
+            "morning": {
+                "enabled": config.morning_enabled,
+                "start_time": config.morning_window_start,
+                "end_time": config.morning_window_end,
+            },
+            "afternoon": {
+                "enabled": config.afternoon_enabled,
+                "start_time": config.afternoon_window_start,
+                "end_time": config.afternoon_window_end,
+            },
+            "evening": {
+                "enabled": config.evening_enabled,
+                "start_time": config.evening_window_start,
+                "end_time": config.evening_window_end,
+            },
+            "configured_by": config.configured_by_admin_id,
+            "last_updated": config.updated_at.isoformat(),
+        }
