@@ -321,3 +321,59 @@ class MaintenanceService(BaseService):
         await row.delete()
         logger.info("Maintenance log deleted: %s", log_id)
         return True
+
+    # ====================================================================
+    # ROUTER-LEVEL HELPERS
+    # ====================================================================
+
+    async def get_all_maintenance_logs(self):
+        """Return all maintenance logs sorted by service_date descending."""
+        from backend.models import MaintenanceLog
+
+        return await MaintenanceLog.find_all().sort("-service_date").to_list()
+
+    async def add_maintenance_log(self, log_data: Any):
+        """Create maintenance log from raw model/dict (router-level helper)."""
+        from backend.models import MaintenanceLog, Vehicle
+
+        data = self._to_dict(log_data)
+        vehicle_uid = data["vehicle_uid"]
+
+        vehicle = await Vehicle.find_one(Vehicle.uid == vehicle_uid)
+        if not vehicle:
+            self.raise_not_found("Vehicle not found")
+
+        uid = await self.get_next_uid("vehicle_maintenance")
+        log = MaintenanceLog(uid=uid, vehicle_plate=vehicle.plate, **data)
+        await log.insert()
+        logger.info("Maintenance log added for vehicle %s", vehicle.plate)
+        return log
+
+    async def get_all_fuel_logs(self):
+        """Return all fuel logs sorted by date descending."""
+        from backend.models import FuelLog
+
+        return await FuelLog.find_all().sort("-date").to_list()
+
+    async def add_fuel_log(self, log_data: Any):
+        """Create fuel log from raw model/dict (router-level helper)."""
+        from backend.models import FuelLog, Vehicle
+
+        data = self._to_dict(log_data)
+        vehicle_uid = data["vehicle_uid"]
+
+        vehicle = await Vehicle.find_one(Vehicle.uid == vehicle_uid)
+        if not vehicle:
+            self.raise_not_found("Vehicle not found")
+
+        uid = await self.get_next_uid("vehicle_fuel")
+        log = FuelLog(uid=uid, vehicle_plate=vehicle.plate, **data)
+        await log.insert()
+
+        odometer = float(data.get("odometer", 0))
+        if odometer > vehicle.current_mileage:
+            vehicle.current_mileage = odometer
+            await vehicle.save()
+
+        logger.info("Fuel log added for vehicle %s", vehicle.plate)
+        return log

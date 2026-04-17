@@ -280,3 +280,9 @@ class TripLogService(BaseService):
         await trip.delete()
         logger.info("Trip log deleted: %s", trip_log_id)
         return True
+
+    async def get_all_trips(self):
+        """Return all trip logs sorted by out_time descending."""
+        from backend.models import TripLog
+
+        return await TripLog.find_all().sort("-out_time").to_list()

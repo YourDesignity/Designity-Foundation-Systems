@@ -354,3 +354,39 @@ class VehicleService(BaseService):
         """Backward-compatible alias for deactivate_vehicle."""
         await self.deactivate_vehicle(vehicle_id)
         return True
+
+    # ====================================================================
+    # EXPENSE OPERATIONS
+    # ====================================================================
+
+    async def get_all_expenses(self):
+        """Return all vehicle expenses sorted by date descending."""
+        from backend.models import VehicleExpense
+
+        return await VehicleExpense.find_all().sort("-date").to_list()
+
+    async def add_expense(self, payload: Any):
+        """Create a vehicle expense after validating the vehicle exists."""
+        from backend.models import Vehicle, VehicleExpense
+
+        data = self._to_dict(payload)
+        vehicle_uid = data["vehicle_uid"]
+
+        vehicle = await Vehicle.find_one(Vehicle.uid == vehicle_uid)
+        if not vehicle:
+            self.raise_not_found("Vehicle not found")
+
+        uid = await self.get_next_uid("vehicle_expenses")
+        expense = VehicleExpense(
+            uid=uid,
+            vehicle_uid=vehicle_uid,
+            vehicle_plate=vehicle.plate,
+            driver_name=data.get("driver_name", ""),
+            category=data.get("category", ""),
+            amount=float(data.get("amount", 0.0)),
+            date=data.get("date", ""),
+            description=data.get("description"),
+        )
+        await expense.insert()
+        logger.info("Expense recorded for vehicle %s", vehicle.plate)
+        return expense

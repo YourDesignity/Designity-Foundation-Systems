@@ -149,6 +149,72 @@ class SiteService(BaseService):
 
         return await Site.find_all().sort("+uid").to_list()
 
+    async def get_active_sites_for_listing(self) -> list[dict]:
+        from backend.models import Admin, Site
+
+        sites = await Site.find(Site.is_active == True).sort(+Site.name).to_list()
+        manager_uids = [s.manager_uid for s in sites if s.manager_uid]
+        managers = await Admin.find(Admin.uid.in_(manager_uids)).to_list() if manager_uids else []
+        manager_map = {m.uid: m.full_name for m in managers}
+        return [
+            {
+                "id": site.uid,
+                "name": site.name,
+                "location": site.location,
+                "site_manager": manager_map.get(site.manager_uid) if site.manager_uid else None,
+                "description": site.description,
+                "phone": site.phone,
+                "is_active": site.is_active,
+            }
+            for site in sites
+        ]
+
+    async def create_legacy_site(self, payload: Any) -> dict:
+        from backend.models import Admin, Site
+
+        data = payload.model_dump(exclude_unset=True) if hasattr(payload, "model_dump") else dict(payload)
+        site_name = data.get("name")
+        existing = await Site.find_one(Site.name == site_name)
+        if existing:
+            self.raise_bad_request(f"The site name '{site_name}' is already taken.")
+
+        manager_uid = None
+        manager_name = data.get("site_manager")
+        if manager_name:
+            admin = await Admin.find_one(Admin.full_name == manager_name)
+            if admin:
+                manager_uid = admin.uid
+
+        new_uid = await self.get_next_uid("sites")
+        site = Site(
+            uid=new_uid,
+            name=site_name,
+            location=data.get("location"),
+            manager_uid=manager_uid,
+            description=data.get("description"),
+            phone=data.get("phone"),
+            is_active=True,
+        )
+        await site.insert()
+        logger.info("Legacy site created: %s (%s)", site_name, new_uid)
+        return {"status": "success", "site_id": new_uid}
+
+    async def delete_legacy_site(self, site_id: int) -> None:
+        from backend.models import Admin, Site
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site Not Found")
+
+        admins_with_access = await Admin.find(Admin.assigned_site_uids == site_id).to_list()
+        for admin in admins_with_access:
+            if site_id in admin.assigned_site_uids:
+                admin.assigned_site_uids.remove(site_id)
+                await admin.save()
+
+        await site.delete()
+        logger.info("Legacy site deleted: %s", site_id)
+
     async def update_site(self, site_id: int, payload: Any):
         site = await self.get_site_by_id(site_id)
         data = payload.model_dump(exclude_unset=True) if hasattr(payload, "model_dump") else dict(payload)

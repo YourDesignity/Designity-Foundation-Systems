@@ -369,6 +369,16 @@ class PurchaseOrderService(BaseService):
     # Backward compatible aliases
     # --------------------------------------------------------------------
 
+    async def get_all_purchase_orders(self, status_filter: Optional[str] = None):
+        """List all purchase orders with optional status filter."""
+        from backend.models import PurchaseOrder
+
+        if status_filter:
+            return await PurchaseOrder.find(
+                PurchaseOrder.status == status_filter
+            ).sort("-created_at").to_list()
+        return await PurchaseOrder.find_all().sort("-created_at").to_list()
+
     async def get_purchase_orders(self):
         """Backward-compatible list helper."""
         from backend.models import PurchaseOrder

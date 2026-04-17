@@ -6,9 +6,8 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from backend.models import Project, Contract, Site, EmployeeAssignment
-from backend.database import get_next_uid
 from backend.security import get_current_active_user
+from backend.services.projects.project_service import ProjectService
 from backend.utils.logger import setup_logger
 
 router = APIRouter(
@@ -18,6 +17,7 @@ router = APIRouter(
 )
 
 logger = setup_logger("ProjectsRouter", log_file="logs/projects_router.log", level=logging.DEBUG)
+service = ProjectService()
 
 # ===== SCHEMAS =====
 
@@ -62,34 +62,9 @@ async def create_project(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can create projects")
 
-    from backend.models import CompanySettings
-
-    settings = await CompanySettings.find_one(CompanySettings.uid == 1)
-
-    new_uid = await get_next_uid("projects")
-    if settings and settings.auto_generate_project_codes:
-        prefix = settings.project_code_prefix or "PRJ"
-        project_code = f"{prefix}-{new_uid:03d}"
-    else:
-        project_code = f"PRJ-{new_uid:03d}"
-
-    new_project = Project(
-        uid=new_uid,
-        project_code=project_code,
-        project_name=project_data.project_name,
-        client_name=project_data.client_name,
-        client_contact=project_data.client_contact,
-        client_email=project_data.client_email,
-        description=project_data.description,
-        status="Active",
-        created_by_admin_id=current_user.get("id")
-    )
-
-    await new_project.insert()
-
-    logger.info(f"Project created: {project_code} by admin {current_user.get('sub')}")
-
-    return new_project
+    project = await service.create_project(project_data, current_user.get("id"))
+    logger.info(f"Project created: {project.project_code} by admin {current_user.get('sub')}")
+    return project
 
 
 @router.get("/", response_model=List[ProjectResponse])
@@ -101,11 +76,7 @@ async def get_all_projects(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can view all projects")
 
-    if status:
-        projects = await Project.find(Project.status == status).sort("+uid").to_list()
-    else:
-        projects = await Project.find_all().sort("+uid").to_list()
-
+    projects = await service.get_projects_filtered(status)
     logger.info(f"Retrieved {len(projects)} projects")
     return projects
 
@@ -119,25 +90,7 @@ async def get_project_details(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can view project details")
 
-    project = await Project.find_one(Project.uid == project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    await project.update_metrics()
-
-    contracts = await Contract.find(Contract.project_id == project_id).to_list()
-    sites = await Site.find(Site.project_id == project_id).to_list()
-    assignments = await EmployeeAssignment.find(
-        EmployeeAssignment.project_id == project_id,
-        EmployeeAssignment.status == "Active"
-    ).to_list()
-
-    return {
-        "project": project,
-        "contracts": contracts,
-        "sites": sites,
-        "active_assignments": assignments
-    }
+    return await service.get_project_details(project_id)
 
 
 @router.put("/{project_id}")
@@ -150,19 +103,8 @@ async def update_project(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can update projects")
 
-    project = await Project.find_one(Project.uid == project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    update_data = project_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(project, key, value)
-
-    project.updated_at = datetime.now()
-    await project.save()
-
+    project = await service.update_project(project_id, project_update)
     logger.info(f"Project {project_id} updated by admin {current_user.get('sub')}")
-
     return project
 
 
@@ -175,35 +117,8 @@ async def delete_project(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can delete projects")
 
-    project = await Project.find_one(Project.uid == project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    active_contracts = await Contract.find(
-        Contract.project_id == project_id,
-        Contract.status == "Active"
-    ).count()
-
-    if active_contracts > 0:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot delete project with {active_contracts} active contract(s). Complete or terminate contracts first."
-        )
-
-    active_sites = await Site.find(
-        Site.project_id == project_id,
-        Site.status == "Active"
-    ).count()
-
-    if active_sites > 0:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot delete project with {active_sites} active site(s)."
-        )
-
-    await project.delete()
+    await service.delete_project_with_constraints(project_id)
     logger.info(f"Project {project_id} deleted by admin {current_user.get('sub')}")
-
     return None
 
 
@@ -216,34 +131,4 @@ async def get_project_workforce_summary(
     if current_user.get("role") not in ["SuperAdmin", "Admin"]:
         raise HTTPException(status_code=403, detail="Only Admins can view workforce summary")
 
-    project = await Project.find_one(Project.uid == project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    sites = await Site.find(Site.project_id == project_id).to_list()
-
-    total_required = sum(s.required_workers for s in sites)
-    total_assigned = sum(s.assigned_workers for s in sites)
-
-    company_assignments = await EmployeeAssignment.find(
-        EmployeeAssignment.project_id == project_id,
-        EmployeeAssignment.employee_type == "Company",
-        EmployeeAssignment.status == "Active"
-    ).count()
-
-    from backend.models import TemporaryAssignment
-    external_assignments = await TemporaryAssignment.find(
-        TemporaryAssignment.project_id == project_id,
-        TemporaryAssignment.status == "Active"
-    ).count()
-
-    return {
-        "project_id": project_id,
-        "project_name": project.project_name,
-        "total_sites": len(sites),
-        "total_required_workers": total_required,
-        "total_assigned_workers": total_assigned,
-        "company_employees": company_assignments,
-        "external_workers": external_assignments,
-        "fulfillment_rate": (total_assigned / total_required * 100) if total_required > 0 else 0
-    }
+    return await service.get_project_workforce_summary(project_id)
