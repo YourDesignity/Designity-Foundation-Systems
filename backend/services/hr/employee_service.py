@@ -1,6 +1,6 @@
 """Service layer for employee operations."""
 
-from typing import Any, List, Optional
+from typing import Any, List
 
 from backend.database import get_next_uid
 from backend.services.base_service import BaseService
@@ -18,16 +18,18 @@ class EmployeeService(BaseService):
         await employee.insert()
         return employee
 
-    async def get_employee(self, employee_id: int) -> Optional[Any]:
+    async def get_employee_by_id(self, employee_id: int):
         from backend.models import Employee
 
-        return await Employee.find_one(Employee.uid == employee_id)
-
-    async def get_employee_by_id(self, employee_id: int):
-        employee = await self.get_employee(employee_id)
+        employee = await Employee.find_one(Employee.uid == employee_id)
         if not employee:
             self.raise_not_found(f"Employee {employee_id} not found")
         return employee
+
+    async def get_employee_if_exists(self, employee_id: int):
+        from backend.models import Employee
+
+        return await Employee.find_one(Employee.uid == employee_id)
 
     async def get_employees(self):
         from backend.models import Employee
@@ -48,7 +50,7 @@ class EmployeeService(BaseService):
         return True
 
     async def validate_designation(self, employee_id: int, expected_designation: str, detail_prefix: str):
-        employee = await self.get_employee(employee_id)
+        employee = await self.get_employee_if_exists(employee_id)
         if employee and employee.designation != expected_designation:
             self.raise_bad_request(
                 f"{detail_prefix} designation '{employee.designation}' does not match slot designation '{expected_designation}'"

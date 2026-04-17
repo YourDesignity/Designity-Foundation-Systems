@@ -47,4 +47,4 @@ class AdminService(BaseService):
     async def get_active_managers(self):
         from backend.models import Admin
 
-        return await Admin.find(Admin.role == "Site Manager", Admin.is_active == True).sort("+uid").to_list()
+        return await Admin.find(Admin.role == "Site Manager", Admin.is_active).sort("+uid").to_list()
