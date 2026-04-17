@@ -296,7 +296,7 @@ class AssignmentService(BaseService):
             notes=f"Transferred from site {from_site_id}",
             created_by=transferred_by,
         )
-        logger.info("Employee %s transferred %s -> %s", employee_id, from_site_id, to_site_id)
+        logger.info("Employee transfer completed from site %s to site %s", from_site_id, to_site_id)
         return new_assignment
 
     # ====================================================================

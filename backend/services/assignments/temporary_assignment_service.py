@@ -146,10 +146,11 @@ class TemporaryAssignmentService(BaseService):
         assignment = await self.get_temporary_assignment_by_id(assignment_id)
         if assignment.status != "Active":
             self.raise_bad_request("Only active assignments can be extended")
-        if new_end_date <= assignment.end_date.date():
+        extension_end = new_end_date.date() if isinstance(new_end_date, datetime) else new_end_date
+        if extension_end <= assignment.end_date.date():
             self.raise_bad_request("New end date must be after current end date")
 
-        assignment.end_date = new_end_date
+        assignment.end_date = extension_end
         assignment.total_days = (assignment.end_date - assignment.start_date).days + 1
         assignment.updated_at = datetime.now()
         await assignment.save()

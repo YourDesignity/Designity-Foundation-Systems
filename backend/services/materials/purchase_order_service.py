@@ -1,6 +1,7 @@
 """Service layer for purchase order operations."""
 
 import logging
+import os
 from datetime import date, datetime
 from typing import Any, Optional
 
@@ -214,13 +215,15 @@ class PurchaseOrderService(BaseService):
 
     def check_approval_authority(self, approver_role: str, total_amount: float) -> bool:
         """Check approval authority by role and amount thresholds."""
+        admin_limit = float(os.getenv("PO_ADMIN_APPROVAL_LIMIT", "5000"))
+        manager_limit = float(os.getenv("PO_MANAGER_APPROVAL_LIMIT", "1000"))
         role = (approver_role or "").strip().lower()
         if role == "superadmin":
             return True
         if role == "admin":
-            return total_amount <= 5000
+            return total_amount <= admin_limit
         if role in {"site manager", "manager"}:
-            return total_amount <= 1000
+            return total_amount <= manager_limit
         return False
 
     # ====================================================================

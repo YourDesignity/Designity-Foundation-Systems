@@ -231,7 +231,7 @@ class TripLogService(BaseService):
         from backend.models import TripLog
 
         trips = await TripLog.find_all().to_list()
-        stats: dict[str, dict[str, float]] = {}
+        stats: dict[str, dict[str, Any]] = {}
         for trip in trips:
             key = trip.purpose or "Unspecified"
             row = stats.setdefault(key, {"purpose": key, "trip_count": 0, "total_distance": 0.0})

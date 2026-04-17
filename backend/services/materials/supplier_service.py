@@ -61,7 +61,7 @@ class SupplierService(BaseService):
         data = self._to_dict(payload)
 
         if "supplier_code" in data:
-            duplicate = await SupplierService().get_supplier_by_code(data["supplier_code"], raise_if_missing=False)
+            duplicate = await self.get_supplier_by_code(data["supplier_code"], raise_if_missing=False)
             if duplicate and duplicate.uid != supplier.uid:
                 self.raise_bad_request(f"Supplier code '{data['supplier_code']}' already exists")
 

@@ -267,13 +267,13 @@ class VehicleService(BaseService):
                 ("pollution", vehicle.pollution_expiry),
             ):
                 parsed = self._parse_date(raw_value)
-                if parsed and parsed <= today:
+                if parsed and parsed < today:
                     overdue_reasons.append(f"{label} expired")
 
             latest_maintenance = await MaintenanceLog.find(MaintenanceLog.vehicle_uid == vehicle.uid).sort("-service_date").first_or_none()
             if latest_maintenance and latest_maintenance.next_due_date:
                 next_due = self._parse_date(latest_maintenance.next_due_date)
-                if next_due and next_due <= today:
+                if next_due and next_due < today:
                     overdue_reasons.append("maintenance overdue")
 
             if overdue_reasons:

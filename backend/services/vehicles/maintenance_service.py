@@ -202,6 +202,7 @@ class MaintenanceService(BaseService):
 
     async def calculate_fuel_efficiency_trend(self, vehicle_id: int, months: int = 6):
         """Return trailing monthly fuel efficiency trend (km/l)."""
+        from dateutil.relativedelta import relativedelta
         from backend.models import FuelLog, TripLog
 
         if months <= 0:
@@ -210,10 +211,10 @@ class MaintenanceService(BaseService):
         logs = await FuelLog.find(FuelLog.vehicle_uid == vehicle_id).to_list()
         trips = await TripLog.find(TripLog.vehicle_uid == vehicle_id, TripLog.status == "Completed").to_list()
 
-        today = date.today()
+        month_anchor = date.today().replace(day=1)
         series = []
         for idx in range(months):
-            period = (today.replace(day=1) - timedelta(days=idx * 31)).replace(day=1)
+            period = month_anchor - relativedelta(months=idx)
             month, year = period.month, period.year
 
             month_liters = sum(
