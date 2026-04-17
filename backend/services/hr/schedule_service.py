@@ -165,3 +165,63 @@ class ScheduleService(BaseService):
         schedule = await self.get_schedule_by_id(schedule_id)
         await schedule.delete()
         return True
+
+    async def create_bulk_schedules(self, payload: Any) -> dict:
+        data = self._to_dict(payload)
+        result = await self.create_schedule(data)
+        return {
+            "status": "success",
+            "message": f"Processed request. Created {result.get('created_count', 0)} records. Skipped {result.get('skipped_count', 0)} duplicates.",
+        }
+
+    async def get_schedules_for_user(
+        self,
+        start_date: str,
+        end_date: str,
+        current_user: dict,
+        site_id: Optional[int] = None,
+        employee_id: Optional[int] = None,
+    ) -> list[dict]:
+        from backend.models import Schedule, Site
+
+        query: dict[str, Any] = {"work_date": {"$gte": start_date, "$lte": end_date}}
+        user_perms = current_user.get("perms", [])
+
+        if "employee:view_all" in user_perms:
+            if site_id:
+                query["site_uid"] = site_id
+        elif "schedule:view_assigned" in user_perms:
+            managed_site_ids = current_user.get("sites", [])
+            if not managed_site_ids:
+                return []
+            if site_id:
+                if site_id not in managed_site_ids:
+                    self.raise_forbidden("Forbidden: Access to this site denied.")
+                query["site_uid"] = site_id
+            else:
+                query["site_uid"] = {"$in": managed_site_ids}
+        else:
+            self.raise_forbidden("Permission denied")
+
+        if employee_id:
+            query["employee_uid"] = employee_id
+
+        schedules = await Schedule.find(query).sort("work_date").to_list()
+        if not schedules:
+            return []
+
+        unique_site_uids = list(set(s.site_uid for s in schedules))
+        sites = await Site.find(Site.uid.in_(unique_site_uids)).to_list()
+        site_map = {s.uid: s.name for s in sites}
+        return [
+            {
+                "id": sched.uid,
+                "employee_id": sched.employee_uid,
+                "site_id": sched.site_uid,
+                "site_name": site_map.get(sched.site_uid, "Unknown Site"),
+                "work_date": sched.work_date,
+                "task": sched.task,
+                "shift_type": sched.shift_type,
+            }
+            for sched in schedules
+        ]

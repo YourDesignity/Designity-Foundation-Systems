@@ -145,6 +145,34 @@ class ProjectService(BaseService):
 
         return await Project.find_all().sort("+uid").to_list()
 
+    async def get_projects_filtered(self, status: str | None = None):
+        from backend.models import Project
+
+        if status:
+            return await Project.find(Project.status == status).sort("+uid").to_list()
+        return await Project.find_all().sort("+uid").to_list()
+
+    async def get_project_details(self, project_id: int) -> dict:
+        from backend.models import Contract, EmployeeAssignment, Project, Site
+
+        project = await Project.find_one(Project.uid == project_id)
+        if not project:
+            self.raise_not_found("Project not found")
+
+        await project.update_metrics()
+        contracts = await Contract.find(Contract.project_id == project_id).to_list()
+        sites = await Site.find(Site.project_id == project_id).to_list()
+        assignments = await EmployeeAssignment.find(
+            EmployeeAssignment.project_id == project_id,
+            EmployeeAssignment.status == "Active",
+        ).to_list()
+        return {
+            "project": project,
+            "contracts": contracts,
+            "sites": sites,
+            "active_assignments": assignments,
+        }
+
     async def update_project(self, project_id: int, payload: Any):
         project = await self.get_project_by_id(project_id)
         data = payload.model_dump(exclude_unset=True) if hasattr(payload, "model_dump") else dict(payload)
@@ -160,3 +188,41 @@ class ProjectService(BaseService):
         await project.delete()
         logger.info("Project deleted: ID %s", project_id)
         return True
+
+    async def delete_project_with_constraints(self, project_id: int) -> bool:
+        from backend.models import Contract, Site
+
+        project = await self.get_project_by_id(project_id)
+
+        active_contracts = await Contract.find(
+            Contract.project_id == project_id,
+            Contract.status == "Active",
+        ).count()
+        if active_contracts > 0:
+            self.raise_bad_request(
+                f"Cannot delete project with {active_contracts} active contract(s). Complete or terminate contracts first."
+            )
+
+        active_sites = await Site.find(
+            Site.project_id == project_id,
+            Site.status == "Active",
+        ).count()
+        if active_sites > 0:
+            self.raise_bad_request(f"Cannot delete project with {active_sites} active site(s).")
+
+        await project.delete()
+        logger.info("Project deleted with constraints: ID %s", project_id)
+        return True
+
+    async def get_project_workforce_summary(self, project_id: int) -> dict:
+        summary = await self.get_project_progress(project_id)
+        return {
+            "project_id": summary["project_id"],
+            "project_name": summary["project_name"],
+            "total_sites": summary["total_sites"],
+            "total_required_workers": summary["total_required_workers"],
+            "total_assigned_workers": summary["total_assigned_workers"],
+            "company_employees": summary["company_employees"],
+            "external_workers": summary["external_workers"],
+            "fulfillment_rate": summary["fulfillment_rate"],
+        }
