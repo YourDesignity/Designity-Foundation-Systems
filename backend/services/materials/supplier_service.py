@@ -285,6 +285,13 @@ class SupplierService(BaseService):
         """Backward-compatible alias for get_all_suppliers."""
         return await self.get_all_suppliers()
 
+    async def remove_supplier(self, supplier_id: int):
+        """Permanently delete a supplier record."""
+        supplier = await self.get_supplier_by_id(supplier_id)
+        await supplier.delete()
+        logger.warning("Supplier hard-deleted: %s", supplier_id)
+        return {"message": "Supplier deleted"}
+
     async def delete_supplier(self, supplier_id: int) -> bool:
         """Backward-compatible alias for deactivate_supplier."""
         await self.deactivate_supplier(supplier_id)

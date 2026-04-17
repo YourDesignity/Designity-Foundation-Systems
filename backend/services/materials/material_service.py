@@ -211,26 +211,34 @@ class MaterialService(BaseService):
         unit_cost: Optional[float] = None,
         reason: Optional[str] = None,
         performed_by: Optional[int] = None,
+        reference_type: Optional[str] = None,
+        reference_id: Optional[int] = None,
+        reference_code: Optional[str] = None,
     ):
         """Manually adjust stock using IN/OUT movement semantics."""
         movement = movement_type.upper().strip()
         if movement not in {"IN", "OUT"}:
             self.raise_bad_request("movement_type must be IN or OUT")
 
+        ref_type = reference_type or "adjustment"
         if movement == "IN":
             return await self.add_stock(
                 material_id=material_id,
                 quantity=quantity,
                 unit_cost=unit_cost,
                 notes=reason,
-                reference_type="adjustment",
+                reference_type=ref_type,
+                reference_id=reference_id,
+                reference_code=reference_code,
                 performed_by=performed_by,
             )
         return await self.deduct_stock(
             material_id=material_id,
             quantity=quantity,
             notes=reason,
-            reference_type="adjustment",
+            reference_type=ref_type,
+            reference_id=reference_id,
+            reference_code=reference_code,
             performed_by=performed_by,
         )
 
@@ -387,6 +395,40 @@ class MaterialService(BaseService):
             "total_quantity": round(sum(item["quantity"] for item in items), 3),
             "total_cost": round(sum(item["total_cost"] for item in items), 3),
             "items": items,
+        }
+
+    async def hard_delete_material(self, material_id: int):
+        """Permanently delete a material record."""
+        material = await self.get_material_by_id(material_id)
+        await material.delete()
+        logger.warning("Material hard-deleted: %s", material.material_code)
+        return {"message": "Material deleted"}
+
+    async def use_material_on_contract(
+        self,
+        material_id: int,
+        quantity: float,
+        contract_id: int,
+        contract_code: Optional[str] = None,
+        notes: Optional[str] = None,
+        performed_by: Optional[int] = None,
+    ):
+        """Record material usage on a contract (OUT movement)."""
+        result = await self.deduct_stock(
+            material_id=material_id,
+            quantity=quantity,
+            notes=notes,
+            reference_type="contract_usage",
+            reference_id=contract_id,
+            reference_code=contract_code,
+            performed_by=performed_by,
+        )
+        material = result["material"]
+        movement = result["movement"]
+        return {
+            "message": "Material usage recorded",
+            "current_stock": material.current_stock,
+            "cost": movement.total_cost,
         }
 
     # --------------------------------------------------------------------
