@@ -128,7 +128,11 @@ class MaintenanceService(BaseService):
 
         today = date.today()
         rows = await MaintenanceLog.find_all().to_list()
-        overdue = [row for row in rows if self._parse_iso_day(row.next_due_date) and self._parse_iso_day(row.next_due_date) < today]
+        overdue = []
+        for row in rows:
+            due_date = self._parse_iso_day(row.next_due_date)
+            if due_date and due_date < today:
+                overdue.append(row)
         return sorted(overdue, key=lambda item: item.next_due_date or "")
 
     # ====================================================================
@@ -217,13 +221,11 @@ class MaintenanceService(BaseService):
             period = month_anchor - relativedelta(months=idx)
             month, year = period.month, period.year
 
-            month_liters = sum(
-                row.liters
-                for row in logs
-                if self._parse_iso_day(row.date)
-                and self._parse_iso_day(row.date).month == month
-                and self._parse_iso_day(row.date).year == year
-            )
+            month_liters = 0.0
+            for row in logs:
+                parsed = self._parse_iso_day(row.date)
+                if parsed and parsed.month == month and parsed.year == year:
+                    month_liters += row.liters
             month_distance = sum(
                 max(0.0, trip.end_mileage - trip.start_mileage)
                 for trip in trips

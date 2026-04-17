@@ -55,6 +55,10 @@ class TemporaryAssignmentService(BaseService):
 
         if end_date < start_date:
             self.raise_bad_request("End date must be after start date")
+        if start_date < date.today():
+            self.raise_bad_request("Start date cannot be in the past")
+        if end_date < date.today():
+            self.raise_bad_request("End date cannot be in the past")
 
         employee = await Employee.find_one(Employee.uid == employee_id)
         if not employee:

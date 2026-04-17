@@ -274,7 +274,7 @@ class PurchaseOrderService(BaseService):
 
         overdue = []
         for order in orders:
-            if order.expected_delivery and order.expected_delivery.date() < current_day:
+            if order.expected_delivery and order.expected_delivery.date() <= current_day:
                 overdue.append(order)
         return overdue
 

@@ -48,7 +48,7 @@ class AssignmentService(BaseService):
                 self.raise_not_found("Contract not found")
 
         if start_date < date.today():
-            self.raise_bad_request("Start date cannot be in the past")
+            self.raise_bad_request("Start date must be today or in the future")
         if end_date and end_date <= start_date:
             self.raise_bad_request("End date must be after start date")
 
