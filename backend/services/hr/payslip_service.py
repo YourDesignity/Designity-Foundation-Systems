@@ -29,7 +29,7 @@ class PayslipService(BaseService):
 
             emp = await Employee.find_one(Employee.uid == employee_id)
             if not emp:
-                logger.warning("Employee ID %s not found.", employee_id)
+                logger.warning("Employee not found for payslip calculation.")
                 return None
 
             pattern = f"^{pay_period}"

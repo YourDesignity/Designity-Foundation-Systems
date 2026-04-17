@@ -22,7 +22,7 @@ class ContractSpecService(BaseService):
     async def add_project_expense(self, uid: int, expense: ProjectExpense):
         contract = await Contract.find_one(Contract.uid == uid)
         if not contract:
-            self.raise_not_found("Project not found")
+            self.raise_not_found("Contract not found")
 
         expense.uid = await self.get_next_uid("project_expenses")
         if not expense.date:
@@ -38,4 +38,4 @@ class ContractSpecService(BaseService):
         if not contract:
             self.raise_not_found("Contract not found")
         await contract.delete()
-        return {"message": "Project deleted"}
+        return {"message": "Contract deleted"}
