@@ -2,7 +2,9 @@
 
 from backend.services.base_service import BaseService
 from backend.services.contract_service import ContractService
+from backend.services.duty_list_service import DutyListService
 from backend.services.employee_service import EmployeeService
+from backend.services.inventory_service import InventoryService
 from backend.services.role_contracts_service import RoleContractsService
 from backend.services.admin import AdminService, ManagerAttendanceService, ManagerService
 from backend.services.analytics import DashboardService, ReportingService
@@ -12,6 +14,7 @@ from backend.services.hr import AttendanceService, DesignationService, ScheduleS
 from backend.services.materials import MaterialService, PurchaseOrderService, SupplierService
 from backend.services.messaging import MessagingService
 from backend.services.projects import ProjectService, SiteService
+from backend.services.substitute_service import SubstituteService
 from backend.services.vehicles import MaintenanceService, TripLogService, VehicleService
 
 __all__ = [
@@ -19,6 +22,9 @@ __all__ = [
     "RoleContractsService",
     "EmployeeService",
     "ContractService",
+    "DutyListService",
+    "InventoryService",
+    "SubstituteService",
     "AdminService",
     "ManagerService",
     "ManagerAttendanceService",

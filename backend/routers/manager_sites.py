@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel
 
 from backend.security import get_current_active_user
+from backend.services import ManagerService
 from backend.services.manager_site_service import ManagerSiteService
 from backend.utils.logger import setup_logger
 
@@ -17,6 +18,7 @@ router = APIRouter(
 
 logger = setup_logger("ManagerSitesRouter", log_file="logs/manager_sites_router.log", level=logging.DEBUG)
 service = ManagerSiteService()
+manager_service = ManagerService()
 
 
 # ===== SCHEMAS =====
@@ -47,7 +49,7 @@ async def get_manager_sites(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Get all sites managed by a specific manager."""
-    result = await service.get_manager_sites(manager_id, current_user)
+    result = await manager_service.get_manager_sites_with_stats(manager_id, current_user)
     logger.info("Manager %s has %d sites", manager_id, result["total_sites"])
     return result
 
@@ -59,7 +61,7 @@ async def get_managed_site_employees(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Get all employees at a site managed by this manager."""
-    return await service.get_site_employees(manager_id, site_id, current_user)
+    return await manager_service.get_managed_site_employees(manager_id, site_id, current_user)
 
 
 @router.post("/{manager_id}/sites/{site_id}/attendance", status_code=status.HTTP_201_CREATED)
