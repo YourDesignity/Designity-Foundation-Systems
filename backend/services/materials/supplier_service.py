@@ -149,7 +149,7 @@ class SupplierService(BaseService):
                 ranked.append({"supplier": supplier, "average_rating": round(avg, 3), "ratings_count": len(ratings)})
 
         ranked.sort(key=lambda item: (item["average_rating"], item["ratings_count"]), reverse=True)
-        return ranked[: max(1, limit)]
+        return ranked[: max(0, limit)]
 
     async def calculate_supplier_performance(
         self,

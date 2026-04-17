@@ -336,7 +336,7 @@ class VehicleService(BaseService):
             rows.append(costs)
 
         rows.sort(key=lambda item: item["total_operating_cost"], reverse=True)
-        return rows[: max(1, top_n)]
+        return rows[: max(0, top_n)]
 
     # --------------------------------------------------------------------
     # Backward compatible aliases

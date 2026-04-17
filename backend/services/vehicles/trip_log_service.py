@@ -239,7 +239,7 @@ class TripLogService(BaseService):
             row["total_distance"] += max(0.0, trip.end_mileage - trip.start_mileage)
 
         ranked = sorted(stats.values(), key=lambda item: item["trip_count"], reverse=True)
-        return [{**row, "total_distance": round(row["total_distance"], 3)} for row in ranked[: max(1, limit)]]
+        return [{**row, "total_distance": round(row["total_distance"], 3)} for row in ranked[: max(0, limit)]]
 
     # --------------------------------------------------------------------
     # Backward compatible aliases
