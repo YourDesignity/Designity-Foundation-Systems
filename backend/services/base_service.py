@@ -41,3 +41,9 @@ class BaseService:
         today_midnight = datetime.combine(date.today(), datetime.min.time())
         if work_date > today_midnight:
             raise HTTPException(status_code=400, detail=detail)
+
+    @staticmethod
+    async def get_next_uid(collection_name: str) -> int:
+        from backend.database import get_next_uid
+
+        return await get_next_uid(collection_name)
