@@ -44,13 +44,7 @@ class SubstituteService(BaseService):
     async def assign_substitute(
         self,
         employee_id: int,
-        site_id: int,
-        start_date: date,
-        end_date: Optional[date],
-        reason: str,
-        replacing_employee_id: Optional[int],
-        daily_rate: Optional[float],
-        hourly_rate: Optional[float],
+        assignment_data: dict,
         current_user: dict,
     ) -> dict:
         """Assign an outsourced employee as a substitute to a site."""
@@ -58,11 +52,27 @@ class SubstituteService(BaseService):
             Admin, Employee, Site, SubstituteAssignment, TemporaryAssignment,
         )
 
+        payload = assignment_data.model_dump(exclude_unset=True) if hasattr(assignment_data, "model_dump") else dict(assignment_data)
+        site_id = payload.get("site_id")
+        start_date = payload.get("start_date")
+        end_date = payload.get("end_date")
+        reason = payload.get("reason")
+        replacing_employee_id = payload.get("replacing_employee_id")
+        daily_rate = payload.get("daily_rate")
+        hourly_rate = payload.get("hourly_rate")
+
+        if isinstance(start_date, str):
+            start_date = date.fromisoformat(start_date)
+        if isinstance(end_date, str):
+            end_date = date.fromisoformat(end_date)
+
         employee = await Employee.find_one(Employee.uid == employee_id)
         if not employee:
             self.raise_not_found("Employee not found")
         if employee.employee_type != "Outsourced":
             self.raise_bad_request("Only Outsourced employees can be assigned as substitutes")
+        if employee.substitute_availability and employee.substitute_availability != "available":
+            self.raise_bad_request("Employee is not available")
         if employee.current_substitute_assignment and employee.current_substitute_assignment.status == "Active":
             self.raise_bad_request("Employee is already on an active substitute assignment")
 
@@ -147,10 +157,15 @@ class SubstituteService(BaseService):
     async def release_substitute(
         self,
         employee_id: int,
-        end_date: Optional[date],
+        release_data: dict,
     ) -> dict:
         """Release a substitute employee from their current assignment."""
         from backend.models import Employee, Site, TemporaryAssignment
+
+        payload = release_data.model_dump(exclude_unset=True) if hasattr(release_data, "model_dump") else dict(release_data)
+        end_date = payload.get("end_date")
+        if isinstance(end_date, str):
+            end_date = date.fromisoformat(end_date)
 
         employee = await Employee.find_one(Employee.uid == employee_id)
         if not employee:
@@ -199,6 +214,41 @@ class SubstituteService(BaseService):
             "employee_name": employee.name,
             "days_worked": max(1, days),
         }
+
+    async def assign_substitute_legacy(
+        self,
+        employee_id: int,
+        site_id: int,
+        start_date: date,
+        end_date: Optional[date],
+        reason: str,
+        replacing_employee_id: Optional[int],
+        daily_rate: Optional[float],
+        hourly_rate: Optional[float],
+        current_user: dict,
+    ) -> dict:
+        """Backward-compatible alias for older callers."""
+        return await self.assign_substitute(
+            employee_id=employee_id,
+            assignment_data={
+                "site_id": site_id,
+                "start_date": start_date,
+                "end_date": end_date,
+                "reason": reason,
+                "replacing_employee_id": replacing_employee_id,
+                "daily_rate": daily_rate,
+                "hourly_rate": hourly_rate,
+            },
+            current_user=current_user,
+        )
+
+    async def release_substitute_legacy(
+        self,
+        employee_id: int,
+        end_date: Optional[date],
+    ) -> dict:
+        """Backward-compatible alias for older callers."""
+        return await self.release_substitute(employee_id=employee_id, release_data={"end_date": end_date})
 
     async def update_substitute_profile(self, employee_id: int, update_data: dict) -> dict:
         """Update substitute-specific fields for an outsourced employee."""

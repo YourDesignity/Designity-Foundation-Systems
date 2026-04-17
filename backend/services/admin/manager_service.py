@@ -189,6 +189,70 @@ class ManagerService(BaseService):
             "sites": site_summaries,
         }
 
+    async def get_manager_sites_with_stats(self, manager_id: int, current_user: dict) -> dict:
+        """Get all sites managed by a manager with statistics."""
+        from backend.models import Admin
+
+        role = current_user.get("role")
+        if role == "Site Manager":
+            me = await Admin.find_one(Admin.email == current_user.get("sub"))
+            if not me or me.uid != manager_id:
+                self.raise_forbidden("Access denied")
+        elif role not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Access denied")
+
+        return await self.get_manager_sites(manager_id)
+
+    async def get_managed_site_employees(self, manager_id: int, site_id: int, current_user: dict) -> dict:
+        """Get all employees at a site managed by this manager."""
+        from backend.models import Admin, Employee, EmployeeAssignment, Site
+
+        role = current_user.get("role")
+        if role == "Site Manager":
+            me = await Admin.find_one(Admin.email == current_user.get("sub"))
+            if not me or me.uid != manager_id:
+                self.raise_forbidden("Access denied")
+        elif role not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Access denied")
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site not found")
+
+        if site.assigned_manager_id != manager_id and role not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("This manager is not assigned to this site")
+
+        assignments = await EmployeeAssignment.find(
+            EmployeeAssignment.site_id == site_id,
+            EmployeeAssignment.status == "Active",
+        ).to_list()
+
+        employees = []
+        for assignment in assignments:
+            emp = await Employee.find_one(Employee.uid == assignment.employee_id)
+            if emp:
+                employees.append(
+                    {
+                        "employee": emp.model_dump(mode="json"),
+                        "assignment": assignment.model_dump(mode="json"),
+                    }
+                )
+
+        substitutes = []
+        for uid in site.active_substitute_uids:
+            emp = await Employee.find_one(Employee.uid == uid)
+            if emp:
+                substitutes.append(emp.model_dump(mode="json"))
+
+        return {
+            "site": site.model_dump(mode="json"),
+            "company_employees": employees,
+            "substitutes": substitutes,
+            "total_workers": len(employees) + len(substitutes),
+            "required_workers": site.required_workers,
+            "is_understaffed": site.is_understaffed,
+        }
+
     def _ensure_admin_role(self, current_user: dict, detail: str) -> None:
         if current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden(detail)

@@ -11,52 +11,66 @@ logger = logging.getLogger("MainApp")
 class DutyListService(BaseService):
     """Business logic for duty assignment CRUD."""
 
-    async def create_duty_assignments(self, assignments: List[Any]):
+    async def create_duty_assignments(self, assignments: List[Any], current_user: dict) -> dict:
         from backend.models import DutyAssignment, Employee
 
+        if current_user.get("role") not in ["SuperAdmin", "Admin", "Site Manager"]:
+            self.raise_forbidden("Only Admins and Site Managers can assign workforce duties.")
+
         for item in assignments:
-            employee = await Employee.find_one(Employee.uid == item.employee_id)
+            payload = item.model_dump() if hasattr(item, "model_dump") else dict(item)
+
+            employee_id = payload.get("employee_id")
+            manager_id = payload.get("manager_id")
+            site_id = payload.get("site_id")
+            start_date = payload.get("start_date")
+            end_date = payload.get("end_date")
+
+            employee = await Employee.find_one(Employee.uid == employee_id)
             if employee:
-                employee.manager_id = item.manager_id
+                employee.manager_id = manager_id
                 await employee.save()
-                logger.info("Employee %s permanently assigned to Manager %s", item.employee_id, item.manager_id)
+                logger.info("Employee %s permanently assigned to Manager %s", employee_id, manager_id)
 
             existing = await DutyAssignment.find_one(
-                DutyAssignment.employee_id == item.employee_id
+                DutyAssignment.employee_id == employee_id
             )
 
             if existing:
-                existing.site_id = item.site_id
-                existing.manager_id = item.manager_id
-                existing.start_date = item.start_date
-                existing.end_date = item.end_date
+                existing.site_id = site_id
+                existing.manager_id = manager_id
+                existing.start_date = start_date
+                existing.end_date = end_date
                 await existing.save()
-                logger.info("Updated duty assignment for Employee %s", item.employee_id)
+                logger.info("Updated duty assignment for Employee %s", employee_id)
             else:
                 new_duty = DutyAssignment(
-                    employee_id=item.employee_id,
-                    site_id=item.site_id,
-                    manager_id=item.manager_id,
-                    start_date=item.start_date,
-                    end_date=item.end_date,
+                    employee_id=employee_id,
+                    site_id=site_id,
+                    manager_id=manager_id,
+                    start_date=start_date,
+                    end_date=end_date,
                 )
                 await new_duty.insert()
-                logger.info("Created new duty assignment for Employee %s", item.employee_id)
+                logger.info("Created new duty assignment for Employee %s", employee_id)
 
         return {"message": "Duty assigned to employees successfully"}
 
-    async def get_duty_list_by_date(self, date: str, current_user: dict):
+    async def get_duty_list_by_date(self, date_str: str, current_user: dict):
         from backend.models import DutyAssignment, Admin
 
         user_role = current_user.get("role")
         user_email = current_user.get("sub")
 
+        if user_role not in ["SuperAdmin", "Admin", "Site Manager"]:
+            self.raise_forbidden("Access denied")
+
         me = await Admin.find_one(Admin.email == user_email)
 
         if user_role in ["SuperAdmin", "Admin"]:
             return await DutyAssignment.find(
-                DutyAssignment.start_date <= date,
-                DutyAssignment.end_date >= date,
+                DutyAssignment.start_date <= date_str,
+                DutyAssignment.end_date >= date_str,
             ).to_list()
 
         if not me:
@@ -64,8 +78,8 @@ class DutyListService(BaseService):
 
         return await DutyAssignment.find(
             DutyAssignment.manager_id == me.uid,
-            DutyAssignment.start_date <= date,
-            DutyAssignment.end_date >= date,
+            DutyAssignment.start_date <= date_str,
+            DutyAssignment.end_date >= date_str,
         ).to_list()
 
     async def delete_duty_assignment(self, assignment_id: str):

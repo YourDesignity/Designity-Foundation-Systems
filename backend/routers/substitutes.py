@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from backend.security import get_current_active_user
-from backend.services.substitute_service import SubstituteService
+from backend.services import SubstituteService
 
 router = APIRouter(
     prefix="/substitutes",
@@ -74,13 +74,7 @@ async def assign_substitute(
 
     return await service.assign_substitute(
         employee_id=employee_id,
-        site_id=request.site_id,
-        start_date=request.start_date,
-        end_date=request.end_date,
-        reason=request.reason,
-        replacing_employee_id=request.replacing_employee_id,
-        daily_rate=request.daily_rate,
-        hourly_rate=request.hourly_rate,
+        assignment_data=request.model_dump(exclude_unset=True),
         current_user=current_user,
     )
 
@@ -97,7 +91,7 @@ async def release_substitute(
 
     return await service.release_substitute(
         employee_id=employee_id,
-        end_date=request.end_date,
+        release_data=request.model_dump(exclude_unset=True),
     )
 
 
