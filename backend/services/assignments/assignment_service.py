@@ -374,3 +374,258 @@ class AssignmentService(BaseService):
         await assignment.delete()
         logger.info("Assignment deleted: %s", assignment_id)
         return True
+
+    # ====================================================================
+    # ROUTER-FACING METHODS
+    # ====================================================================
+
+    async def bulk_assign_employees(
+        self,
+        site_id: int,
+        employee_ids: List[int],
+        assignment_start: date,
+        assignment_end: Optional[date],
+        created_by_admin_id: Optional[int] = None,
+    ) -> dict:
+        """Bulk assign multiple employees to a site (router delegate)."""
+        from backend.models import Contract, Employee, EmployeeAssignment, Project, Site
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site not found")
+
+        project = await Project.find_one(Project.uid == site.project_id) if site.project_id else None
+
+        created_assignments: list = []
+        failed_assignments: list = []
+
+        for emp_id in employee_ids:
+            try:
+                employee = await Employee.find_one(Employee.uid == emp_id)
+                if not employee:
+                    failed_assignments.append({"employee_id": emp_id, "reason": "Employee not found"})
+                    continue
+
+                existing = await EmployeeAssignment.find_one(
+                    EmployeeAssignment.employee_id == emp_id,
+                    EmployeeAssignment.site_id == site_id,
+                    EmployeeAssignment.status == "Active",
+                )
+                if existing:
+                    failed_assignments.append({
+                        "employee_id": emp_id,
+                        "employee_name": employee.name,
+                        "reason": "Already assigned to this site",
+                    })
+                    continue
+
+                new_uid = await self.get_next_uid("employee_assignments")
+
+                new_assignment = EmployeeAssignment(
+                    uid=new_uid,
+                    employee_id=emp_id,
+                    employee_name=employee.name,
+                    employee_designation=employee.designation,
+                    employee_type="Company",
+                    assignment_type="Permanent",
+                    project_id=site.project_id,
+                    project_name=project.project_name if project else None,
+                    contract_id=site.contract_id,
+                    site_id=site_id,
+                    site_name=site.name,
+                    manager_id=site.assigned_manager_id,
+                    manager_name=site.assigned_manager_name,
+                    assigned_date=date.today(),
+                    assignment_start=assignment_start,
+                    assignment_end=assignment_end,
+                    status="Active",
+                    created_by_admin_id=created_by_admin_id,
+                )
+                await new_assignment.insert()
+
+                employee.is_currently_assigned = True
+                employee.current_assignment_type = "Permanent"
+                employee.current_project_id = site.project_id
+                employee.current_project_name = project.project_name if project else None
+                employee.current_site_id = site_id
+                employee.current_site_name = site.name
+                employee.current_manager_id = site.assigned_manager_id
+                employee.current_manager_name = site.assigned_manager_name
+                employee.current_assignment_start = assignment_start
+                employee.current_assignment_end = assignment_end
+                employee.availability_status = "Assigned"
+                if new_assignment.uid not in employee.assignment_history_ids:
+                    employee.assignment_history_ids.append(new_assignment.uid)
+                await employee.save()
+
+                if emp_id not in site.assigned_employee_ids:
+                    site.assigned_employee_ids.append(emp_id)
+                await site.update_workforce_count()
+
+                created_assignments.append(new_assignment)
+                logger.info("Employee ID %s assigned to site ID %s", emp_id, site_id)
+
+            except Exception as e:
+                logger.error("Error assigning employee %s: %s", emp_id, str(e))
+                failed_assignments.append({
+                    "employee_id": emp_id,
+                    "reason": "An error occurred during assignment",
+                })
+
+        return {
+            "message": f"{len(created_assignments)} employees assigned successfully",
+            "created_count": len(created_assignments),
+            "failed_count": len(failed_assignments),
+            "assignments": created_assignments,
+            "failures": failed_assignments,
+        }
+
+    async def get_available_employees(self) -> dict:
+        """Get company employees not currently assigned."""
+        from backend.models import Employee
+
+        available = await Employee.find(
+            Employee.employee_type == "Company",
+            Employee.status == "Active",
+            Employee.is_currently_assigned == False,  # noqa: E712
+        ).to_list()
+        return {"total_available": len(available), "employees": available}
+
+    async def get_employee_history(self, employee_id: int) -> dict:
+        """Get assignment history summary for an employee."""
+        from backend.models import Employee, EmployeeAssignment
+
+        employee = await Employee.find_one(Employee.uid == employee_id)
+        if not employee:
+            self.raise_not_found("Employee not found")
+
+        assignments = await EmployeeAssignment.find(
+            EmployeeAssignment.employee_id == employee_id
+        ).sort("-created_at").to_list()
+
+        return {
+            "employee": employee,
+            "total_assignments": len(assignments),
+            "active_assignments": len([a for a in assignments if a.status == "Active"]),
+            "completed_assignments": len([a for a in assignments if a.status == "Completed"]),
+            "assignments": assignments,
+        }
+
+    async def get_site_employees(self, site_id: int) -> dict:
+        """Get all employees assigned to a site with capacity info."""
+        from backend.models import Employee, EmployeeAssignment, Site
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site not found")
+
+        assignments = await EmployeeAssignment.find(
+            EmployeeAssignment.site_id == site_id,
+            EmployeeAssignment.status == "Active",
+        ).to_list()
+
+        employees = []
+        for assignment in assignments:
+            emp = await Employee.find_one(Employee.uid == assignment.employee_id)
+            if emp:
+                employees.append(emp)
+
+        return {
+            "site": site,
+            "required_workers": site.required_workers,
+            "assigned_workers": site.assigned_workers,
+            "capacity_percentage": round(
+                site.assigned_workers / site.required_workers * 100, 2
+            ) if site.required_workers > 0 else 0,
+            "assignments": assignments,
+            "employees": employees,
+        }
+
+    async def list_assignments(
+        self,
+        site_id: Optional[int] = None,
+        project_id: Optional[int] = None,
+        employee_id: Optional[int] = None,
+        status: Optional[str] = None,
+    ) -> list:
+        """Get all assignments with optional filters."""
+        from backend.models import EmployeeAssignment
+
+        filters: list = []
+        if site_id:
+            filters.append(EmployeeAssignment.site_id == site_id)
+        if project_id:
+            filters.append(EmployeeAssignment.project_id == project_id)
+        if employee_id:
+            filters.append(EmployeeAssignment.employee_id == employee_id)
+        if status:
+            filters.append(EmployeeAssignment.status == status)
+
+        if filters:
+            return await EmployeeAssignment.find(*filters).sort("-created_at").to_list()
+        return await EmployeeAssignment.find_all().sort("-created_at").to_list()
+
+    async def get_assignment_details(self, assignment_id: int) -> dict:
+        """Get assignment with related employee and site data."""
+        from backend.models import Employee, EmployeeAssignment, Site
+
+        assignment = await EmployeeAssignment.find_one(EmployeeAssignment.uid == assignment_id)
+        if not assignment:
+            self.raise_not_found("Assignment not found")
+
+        employee = await Employee.find_one(Employee.uid == assignment.employee_id)
+        site = await Site.find_one(Site.uid == assignment.site_id)
+        return {"assignment": assignment, "employee": employee, "site": site}
+
+    async def update_assignment_fields(self, assignment_id: int, update_data: dict) -> object:
+        """Update assignment from a dict of changed fields."""
+        from backend.models import EmployeeAssignment
+
+        assignment = await EmployeeAssignment.find_one(EmployeeAssignment.uid == assignment_id)
+        if not assignment:
+            self.raise_not_found("Assignment not found")
+
+        for key, value in update_data.items():
+            setattr(assignment, key, value)
+        assignment.updated_at = datetime.now()
+        await assignment.save()
+
+        logger.info("Assignment %s updated", assignment_id)
+        return assignment
+
+    async def unassign_employee(self, assignment_id: int) -> None:
+        """Unassign an employee: mark Completed and update employee/site state."""
+        from backend.models import Employee, EmployeeAssignment, Site
+
+        assignment = await EmployeeAssignment.find_one(EmployeeAssignment.uid == assignment_id)
+        if not assignment:
+            self.raise_not_found("Assignment not found")
+
+        assignment.status = "Completed"
+        assignment.assignment_end = date.today()
+        assignment.updated_at = datetime.now()
+        await assignment.save()
+
+        employee = await Employee.find_one(Employee.uid == assignment.employee_id)
+        if employee:
+            other_active = await EmployeeAssignment.find(
+                EmployeeAssignment.employee_id == assignment.employee_id,
+                EmployeeAssignment.status == "Active",
+                EmployeeAssignment.uid != assignment_id,
+            ).count()
+            if other_active == 0:
+                employee.is_currently_assigned = False
+                employee.current_assignment_type = None
+                employee.current_project_id = None
+                employee.current_site_id = None
+                employee.current_manager_id = None
+                employee.availability_status = "Available"
+            await employee.save()
+
+        site = await Site.find_one(Site.uid == assignment.site_id)
+        if site:
+            if assignment.employee_id in site.assigned_employee_ids:
+                site.assigned_employee_ids.remove(assignment.employee_id)
+            await site.update_workforce_count()
+
+        logger.info("Employee ID %s unassigned from site ID %s", assignment.employee_id, assignment.site_id)
