@@ -271,7 +271,7 @@ class InvoiceService(BaseService):
         return [inv for inv in invoices if inv.status not in {"Paid", "Voided"}]
 
     async def get_overdue_invoices(self, as_of_date: Optional[Any] = None) -> list:
-        """Return unpaid invoices whose due_date is before the given date."""
+        """Return unpaid invoices whose due_date is strictly before the given date."""
         reference = date.today()
         if as_of_date is not None:
             try:

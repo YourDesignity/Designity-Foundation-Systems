@@ -111,6 +111,7 @@ class FinancialAnalyticsService(BaseService):
             if not start or start.month != month or start.year != year:
                 continue
             if ta.rate_type == "Hourly":
+                # total_days is treated as working-day count for hourly temporary assignments.
                 temp_cost += float(ta.hourly_rate or 0) * HOURS_PER_DAY * int(ta.total_days or 0)
             else:
                 temp_cost += float(ta.daily_rate or 0) * int(ta.total_days or 0)

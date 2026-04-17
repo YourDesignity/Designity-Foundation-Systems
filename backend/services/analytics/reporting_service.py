@@ -161,6 +161,11 @@ class ReportingService(BaseService):
             for row in rows_list:
                 all_keys.update(row.keys())
             columns = sorted(all_keys)
+        else:
+            allowed = set(columns)
+            has_extra = any(any(key not in allowed for key in row.keys()) for row in rows_list)
+            if has_extra:
+                logger.warning("CSV export ignored extra row keys not present in explicit columns list")
 
         buffer = io.StringIO()
         writer = csv.DictWriter(buffer, fieldnames=list(columns), extrasaction="ignore")

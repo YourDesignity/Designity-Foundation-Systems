@@ -113,7 +113,7 @@ class DashboardService(BaseService):
         overdue_invoices = await InvoiceService().get_overdue_invoices()
         unfilled_slots = await RoleContractsService().get_unfilled_slots()
         materials = await Material.find_all().to_list()
-        # Treat threshold-level stock as alert-worthy to trigger replenishment in time.
+        # Treat stock at or below the reorder threshold as alert-worthy.
         low_stock = [row for row in materials if row.current_stock <= row.minimum_stock]
 
         return {

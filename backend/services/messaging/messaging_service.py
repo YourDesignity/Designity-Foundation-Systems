@@ -44,6 +44,7 @@ class MessagingService(BaseService):
         from backend.models import Conversation
 
         data = self._to_dict(payload)
+        # De-duplicate while preserving caller-provided participant order.
         participant_ids = list(dict.fromkeys(data.get("participant_ids") or []))
         title = str(data.get("title") or "").strip()
 
