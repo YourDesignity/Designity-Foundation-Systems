@@ -307,14 +307,16 @@ class InvoiceService(BaseService):
         by_contract_spec = await Invoice.find({"specs.contract_id": contract_id}).sort("-created_at").to_list()
 
         merged: dict[int, Any] = {}
-        for inv in by_project + by_contract_spec:
+        for inv in by_project:
+            merged[inv.uid] = inv
+        for inv in by_contract_spec:
             merged[inv.uid] = inv
         return sorted(merged.values(), key=lambda row: row.created_at, reverse=True)
 
     async def calculate_outstanding_amount(self, contract_id: Optional[int] = None) -> float:
         """Calculate total unpaid amount, optionally scoped to a contract."""
         invoices = await (self.get_contract_invoices(contract_id) if contract_id is not None else self.get_unpaid_invoices())
-        return float(sum(float(inv.total_amount or 0) for inv in invoices if inv.status not in {"Paid", "Voided"}))
+        return sum(float(inv.total_amount or 0) for inv in invoices if inv.status not in {"Paid", "Voided"})
 
     async def get_revenue_report(self, start_date: Any, end_date: Any) -> dict:
         """

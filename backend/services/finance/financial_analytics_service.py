@@ -96,7 +96,7 @@ class FinancialAnalyticsService(BaseService):
         return analytics
 
     async def calculate_total_labour_cost(self, month: int, year: int) -> float:
-        """Calculate total monthly labour costs (salary + temporary labour estimate)."""
+        """Calculate monthly labour costs (salary + temporary labour estimate from work-day counts)."""
         self._validate_month_year(month, year)
 
         from backend.models import Employee, TemporaryAssignment

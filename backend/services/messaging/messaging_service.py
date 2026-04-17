@@ -1,6 +1,7 @@
 """Service layer for conversation and message operations."""
 
 import logging
+import asyncio
 from datetime import datetime
 from typing import Any
 
@@ -184,11 +185,14 @@ class MessagingService(BaseService):
 
         if user_id is not None:
             changed = False
+            unread_messages = []
             for message in messages:
                 if user_id not in message.read_by_ids:
                     message.read_by_ids.append(user_id)
-                    await message.save()
+                    unread_messages.append(message)
                     changed = True
+            if unread_messages:
+                await asyncio.gather(*[message.save() for message in unread_messages])
 
             if changed:
                 conversation.unread_count_map[str(user_id)] = 0
