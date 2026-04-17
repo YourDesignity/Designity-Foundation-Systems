@@ -270,7 +270,7 @@ class PurchaseOrderService(BaseService):
         from backend.models import PurchaseOrder
 
         current_day = as_of or date.today()
-        orders = await PurchaseOrder.find(PurchaseOrder.status.in_(["pending", "approved", "partial"])) .to_list()
+        orders = await PurchaseOrder.find(PurchaseOrder.status.in_(["pending", "approved", "partial"])).to_list()
 
         overdue = []
         for order in orders:
