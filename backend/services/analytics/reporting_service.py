@@ -149,6 +149,8 @@ class ReportingService(BaseService):
         Notes:
             This helper builds the CSV in memory and is intended for
             dashboard/report-sized datasets.
+            When `columns` is provided, extra keys in row dictionaries are
+            ignored during export.
         """
         rows_list = list(rows)
         if not rows_list:

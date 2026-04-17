@@ -147,7 +147,7 @@ class MessagingService(BaseService):
         )
         await message.insert()
 
-        conversation.last_message_at = datetime.now()
+        conversation.last_message_at = datetime.utcnow()
         conversation.last_message_preview = body[:50]
         for participant_id in conversation.participant_ids:
             if participant_id != sender_id:

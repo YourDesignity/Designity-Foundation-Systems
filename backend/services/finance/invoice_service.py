@@ -7,6 +7,7 @@ from typing import Any, Optional
 from backend.services.base_service import BaseService
 
 logger = logging.getLogger("MainApp")
+# Keep invoice numbers aligned with existing INV-YYYY-1xxx format used by routers/UI.
 INVOICE_NUMBER_OFFSET = 1000
 
 

@@ -6,6 +6,7 @@ from datetime import date, datetime
 from backend.services.base_service import BaseService
 
 logger = logging.getLogger("MainApp")
+# Standard working-day assumption used to convert hourly temp assignments to daily-equivalent cost.
 HOURS_PER_DAY = 8
 
 
