@@ -18,13 +18,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useAuth } from '../../context/AuthContext';
-import { getEmployees } from '../../services/apiService';
-import {
-  assignRoleSlotEmployee,
-  getDailyFulfillmentRecord,
-  getRoleContractsList,
-  swapRoleSlotEmployee,
-} from '../../services/roleContractsService';
+import { dailyFulfillmentService, employeeService, roleContractsService } from '../../services';
 import SlotAssignmentModal from '../../components/role-contracts/SlotAssignmentModal';
 import EmployeeSwapModal from '../../components/role-contracts/EmployeeSwapModal';
 
@@ -47,7 +41,7 @@ const SlotManagement = () => {
 
   React.useEffect(() => {
     if (!canAccess) return;
-    Promise.all([getRoleContractsList(), getEmployees()])
+    Promise.all([roleContractsService.getRoleContractsList(), employeeService.getAll()])
       .then(([contractList, employeeList]) => {
         setContracts(contractList || []);
         setEmployees(employeeList || []);
@@ -60,7 +54,7 @@ const SlotManagement = () => {
     if (!contractId) return message.warning('Select a contract first.');
     setLoading(true);
     try {
-      const response = await getDailyFulfillmentRecord(contractId, date.format('YYYY-MM-DD'));
+      const response = await dailyFulfillmentService.getDailyFulfillmentRecord(contractId, date.format('YYYY-MM-DD'));
       setRecord(response);
     } catch (error) {
       setRecord(null);
@@ -79,7 +73,7 @@ const SlotManagement = () => {
   const refreshRecord = async () => {
     if (!record?.contract_id) return;
     try {
-      const updated = await getDailyFulfillmentRecord(record.contract_id, dayjs(record.date).format('YYYY-MM-DD'));
+      const updated = await dailyFulfillmentService.getDailyFulfillmentRecord(record.contract_id, dayjs(record.date).format('YYYY-MM-DD'));
       setRecord(updated);
     } catch (error) {
       message.error(`Refresh failed: ${error.message}`);
@@ -95,7 +89,7 @@ const SlotManagement = () => {
 
     setSaving(true);
     try {
-      await assignRoleSlotEmployee(record.uid, {
+      await dailyFulfillmentService.assignRoleSlotEmployee(record.uid, {
         slot_id: assignSlot.slot_id,
         employee_id: employee.uid,
         employee_name: employee.name,
@@ -121,7 +115,7 @@ const SlotManagement = () => {
 
     setSaving(true);
     try {
-      await swapRoleSlotEmployee(record.uid, {
+      await dailyFulfillmentService.swapRoleSlotEmployee(record.uid, {
         slot_id: swapSlot.slot_id,
         new_employee_id: employee.uid,
         new_employee_name: employee.name,

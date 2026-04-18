@@ -10,10 +10,9 @@ import {
 } from '@ant-design/icons';
 // --- Services ---
 import { 
-    getEmployees, createPayslips, 
-    updateEmployee, deleteEmployee, getManagers,
-    uploadEmployeePhoto, getEmployeePhoto
+    createPayslips, getManagers
 } from '../services/apiService';
+import { employeeService } from '../services';
 import websocketService from '../services/websocketService';
 import { useAuth } from '../context/AuthContext'; 
 
@@ -55,7 +54,7 @@ function EmployeesPage() {
             setLoading(true);
 
             // Backend already filters employees by manager_id for Site Manager role
-            const promises = [getEmployees()];
+            const promises = [employeeService.getAll()];
             if (isHighLevelAdmin) promises.push(getManagers());
 
             const results = await Promise.all(promises);
@@ -133,7 +132,7 @@ function EmployeesPage() {
             okType: 'danger',
             onOk: async () => {
                 try {
-                    await deleteEmployee(id);
+                    await employeeService.remove(id);
                     message.success("Employee removed successfully");
                     loadData();
                 } catch (err) { message.error("Delete failed"); }
@@ -145,7 +144,7 @@ function EmployeesPage() {
         setEditingEmployee(record);
         form.setFieldsValue(record);
         if (record.photo_path) {
-            setEditPhotoPreview(getEmployeePhoto(record.id || record.uid));
+            setEditPhotoPreview(employeeService.getPhotoUrl(record.id || record.uid));
         } else {
             setEditPhotoPreview(null);
         }
@@ -170,10 +169,10 @@ function EmployeesPage() {
         try {
             const vals = await form.validateFields();
             const empId = editingEmployee.id || editingEmployee.uid;
-            await updateEmployee(empId, vals);
+            await employeeService.update(empId, vals);
             if (editPhotoFile) {
                 try {
-                    await uploadEmployeePhoto(empId, editPhotoFile);
+                    await employeeService.uploadPhoto(empId, editPhotoFile);
                     message.success("Employee details and photo updated");
                 } catch (e) {
                     console.warn('Photo upload failed:', e);
@@ -202,7 +201,7 @@ function EmployeesPage() {
                     <Avatar 
                         shape="square" 
                         icon={<UserOutlined />} 
-                        src={record.photo_path ? getEmployeePhoto(record.id || record.uid) : null}
+                        src={record.photo_path ? employeeService.getPhotoUrl(record.id || record.uid) : null}
                         onError={() => true}
                     />
                     <div>
