@@ -55,6 +55,7 @@ from backend.routers.messaging import messaging_router
 from backend.routers.settings import settings_router
 from backend.routers.materials import materials_router, suppliers_router, purchase_orders_router
 from backend.routers.role_contracts import contract_roles_router, daily_fulfillment_router
+from backend.routers.payroll import payroll_router
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -352,6 +353,8 @@ app.include_router(purchase_orders_router)
 # NEW: Role-Based Labour Contracts (Phase 1)
 app.include_router(contract_roles_router)
 app.include_router(daily_fulfillment_router)
+# NEW: Configurable Payroll Engine (Phase 5B)
+app.include_router(payroll_router)
 
 @app.get("/", tags=["Root"])
 def read_root():
