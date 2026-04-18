@@ -40,9 +40,8 @@ class PayrollService:
 
         if not calculator:
             logger.warning(
-                "Unknown salary strategy '%s' for contract %d; falling back to 'configurable'.",
+                "Unknown salary strategy '%s'; falling back to 'configurable'.",
                 calculator_type,
-                contract_id,
             )
             calculator = self.CALCULATORS["configurable"]
 
