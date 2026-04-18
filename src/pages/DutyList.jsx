@@ -10,22 +10,15 @@ import dayjs from 'dayjs';
 import '../styles/DutyList.css';
 
 // --- Services ---
-import { 
-    getEmployees, getSites, saveDutyAssignments, 
-    getDutyAssignments, getManagers
-} from '../services/apiService';
+import { employeeService, siteService, managerService, dutyListService } from '../services';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-// Fallback for direct deletion
+// Fallback for direct deletion - now using service
 const deleteDutyManual = async (id) => {
-    const token = localStorage.getItem('access_token');
-    return fetch(`http://127.0.0.1:8000/duty_list/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    return dutyListService.deleteById(id);
 };
 
 const DutyListPage = () => {
@@ -58,7 +51,7 @@ const DutyListPage = () => {
         try {
             setLoading(true);
             const [empData, siteData, adminData] = await Promise.all([
-                getEmployees(), getSites(), getManagers()
+                employeeService.getAll(), siteService.getAll(), managerService.getAll()
             ]);
             setEmployees(Array.isArray(empData) ? empData : []);
             setSites(Array.isArray(siteData) ? siteData : []);
@@ -72,7 +65,7 @@ const DutyListPage = () => {
 
     const refreshAssignedList = async (date = dayjs()) => {
         try {
-            const data = await getDutyAssignments(date.format('YYYY-MM-DD'));
+            const data = await dutyListService.getByDate(date.format('YYYY-MM-DD'));
             setAssignedIdsToday((data || []).map(d => d.employee_id));
         } catch (e) { console.error("Sync error"); }
     };
@@ -95,7 +88,7 @@ const DutyListPage = () => {
         try {
             setLoadingDuty(true);
             const dateStr = viewDate.format('YYYY-MM-DD');
-            const data = await getDutyAssignments(dateStr);
+            const data = await dutyListService.getByDate(dateStr);
             const mappedData = (data || []).map((record) => {
                 const emp = employees.find(e => e.id === record.employee_id);
                 const site = sites.find(s => s.id === record.site_id);
@@ -140,7 +133,7 @@ const DutyListPage = () => {
                 end_date: values.dateRange[1].format('YYYY-MM-DD')
             }));
 
-            await saveDutyAssignments(payload);
+            await dutyListService.save(payload);
             message.success("Duty assigned to employees successfully");
             setIsModalOpen(false);
             setSelectedEmployees([]);

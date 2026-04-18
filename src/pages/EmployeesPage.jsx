@@ -10,9 +10,9 @@ import {
 } from '@ant-design/icons';
 // --- Services ---
 import { 
-    createPayslips, getManagers
+    createPayslips
 } from '../services/apiService';
-import { employeeService } from '../services';
+import { employeeService, managerService } from '../services';
 import { useEmployees, useDeleteEmployee, useUpdateEmployee, useUploadEmployeePhoto } from '../hooks/useEmployees';
 import websocketService from '../services/websocketService';
 import { useAuth } from '../context/AuthContext'; 
@@ -56,7 +56,7 @@ function EmployeesPage() {
     // --- 1. Load managers for admin users ---
     React.useEffect(() => {
         if (!isHighLevelAdmin) return;
-        getManagers()
+        managerService.getAll()
             .then((data) => setManagers(data || []))
             .catch(() => {});
     }, [isHighLevelAdmin]);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { 
   Row, Col, Breadcrumb, Badge, Input, Avatar, Dropdown, Typography, 
-  Tag, theme, Tooltip, Popover, List, Button, Empty
+  Tag, theme, Tooltip, Popover, Button, Empty
 } from "antd";
 import { 
   SearchOutlined, BellFilled, UserOutlined, LogoutOutlined, 
@@ -51,7 +51,10 @@ function Header({ name, subName }) {
       <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between' }}>
         <Text strong>Notifications</Text>
       </div>
-      <List dataSource={notifications} locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Notifications" /> }} renderItem={(item) => <List.Item>{item.title}</List.Item>} />
+      {notifications.length === 0
+        ? <div style={{ padding: '16px', textAlign: 'center' }}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Notifications" /></div>
+        : <div>{notifications.map((item, i) => <div key={i} style={{ padding: '8px 16px', borderBottom: '1px solid #f0f0f0' }}>{item.title}</div>)}</div>
+      }
     </div>
   );
 

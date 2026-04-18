@@ -10,7 +10,7 @@ import {
   SearchOutlined, TeamOutlined, UserOutlined,
   ReloadOutlined, ApartmentOutlined,
 } from '@ant-design/icons';
-import { fetchWithAuth } from '../services/apiService.jsx';
+import { workforceService } from '../services';
 import WorkforceAllocationCard from '../components/Dashboard/WorkforceAllocationCard.jsx';
 
 const { Title, Text } = Typography;
@@ -27,7 +27,7 @@ const WorkforceDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchWithAuth('/workforce/allocation');
+      const res = await workforceService.getAllocation();
       setData(res);
     } catch (err) {
       setError(err.message || 'Failed to load workforce data');
@@ -52,7 +52,7 @@ const WorkforceDashboard = () => {
     return (
       <Alert
         type="error"
-        message="Error"
+        title="Error"
         description={error}
         action={<Button onClick={load} icon={<ReloadOutlined />}>Retry</Button>}
         style={{ margin: 24 }}

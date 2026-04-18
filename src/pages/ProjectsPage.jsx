@@ -6,7 +6,7 @@ import {
 import { PlusOutlined, ApartmentOutlined, EnvironmentOutlined, TeamOutlined } from '@ant-design/icons';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithAuth } from '../services/apiService';
+import { projectService } from '../services';
 import CreateProjectModal from '../components/ProjectWorkflow/CreateProjectModal';
 
 const { Title } = Typography;
@@ -39,7 +39,7 @@ const ProjectsPage = () => {
   const fetchProjects = async () => {
     setLoading(true);
     try {
-      const data = await fetchWithAuth('/projects/');
+      const data = await projectService.getAll();
       setProjects(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch projects:', error);

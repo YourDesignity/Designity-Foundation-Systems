@@ -7,8 +7,7 @@ import {
   BiWrench, BiTrash
 } from 'react-icons/bi';
 
-// --- API IMPORTS ---
-import { getInventory, addInventoryItem, deleteInventoryItem } from '../services/apiService';
+import { inventoryService } from '../services';
 
 const { Option } = Select;
 
@@ -26,7 +25,7 @@ const InventoryPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await getInventory();
+      const data = await inventoryService.getAll();
       // Ensure data is an array
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -57,7 +56,7 @@ const InventoryPage = () => {
         status: values.stock === 0 ? "Out of Stock" : values.stock < 10 ? "Low Stock" : "In Stock"
       };
 
-      await addInventoryItem(payload);
+      await inventoryService.create(payload);
       message.success("Item added successfully!");
       setIsModalVisible(false);
       form.resetFields();
@@ -71,7 +70,7 @@ const InventoryPage = () => {
   const handleDelete = async (uid) => {
     if(!window.confirm("Are you sure you want to delete this item?")) return;
     try {
-      await deleteInventoryItem(uid);
+      await inventoryService.deleteById(uid);
       message.success("Item deleted");
       fetchData();
     } catch (error) {

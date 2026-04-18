@@ -215,7 +215,7 @@ const AssignTempWorkersModal = ({ visible, site, onCancel, onSuccess, onRegister
             }}
             width={860}
             confirmLoading={loading}
-            destroyOnClose
+            destroyOnHidden
         >
             {/* Site Info */}
             {site && (

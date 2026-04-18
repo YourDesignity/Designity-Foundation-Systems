@@ -2,29 +2,47 @@ import BaseService from '../base/BaseService';
 
 /**
  * Manager profile service.
+ * Uses an empty base path because this service spans two different
+ * API prefixes: /admins/managers (list) and /managers/profiles (CRUD).
  */
 class ManagerService extends BaseService {
   constructor() {
-    super('/managers/profiles');
+    // Empty base path: methods use absolute paths to span two API prefixes
+    super('');
   }
 
   /**
-   * Get all managers.
+   * Get all managers (lightweight list for dropdowns).
    * @returns {Promise<Array>}
    */
   async getAll() {
-    // TODO: Implement in Phase 4B
-    return this.get('/');
+    return this.get('/admins/managers');
   }
 
   /**
-   * Get manager by ID.
+   * Get full manager profiles.
+   * @returns {Promise<Array>}
+   */
+  async getProfiles() {
+    return this.get('/managers/profiles');
+  }
+
+  /**
+   * Get manager profile by ID.
    * @param {number|string} id
    * @returns {Promise<Object>}
    */
   async getById(id) {
-    // TODO: Implement in Phase 4B
-    return this.get(`/${id}`);
+    return this.get(`/managers/profiles/${id}`);
+  }
+
+  /**
+   * Delete a manager profile by ID.
+   * @param {number|string} id
+   * @returns {Promise<void>}
+   */
+  async deleteProfile(id) {
+    return this.delete(`/managers/profiles/${id}`);
   }
 }
 

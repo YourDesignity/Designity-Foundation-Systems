@@ -7,7 +7,7 @@ import {
   SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined,
   CalendarOutlined, SettingOutlined, MoreOutlined, TeamOutlined, CloseCircleOutlined,
 } from '@ant-design/icons';
-import { getManagerProfiles, deleteManagerProfile } from '../services/apiService';
+import { managerService } from '../services';
 
 const { Title, Text } = Typography;
 
@@ -22,7 +22,7 @@ function ManagersPage() {
   const fetchManagers = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getManagerProfiles();
+      const data = await managerService.getProfiles();
       setManagers(Array.isArray(data) ? data : []);
     } catch (err) {
       message.error('Failed to load managers: ' + err.message);
@@ -49,7 +49,7 @@ function ManagersPage() {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      await deleteManagerProfile(deleteTarget.admin_id);
+      await managerService.deleteProfile(deleteTarget.admin_id);
       message.success('Manager deleted successfully');
       setDeleteTarget(null);
       fetchManagers();

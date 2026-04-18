@@ -8,7 +8,7 @@ import {
   ReloadOutlined, CalendarOutlined, EditOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { getManagerAttendanceAll, overrideManagerAttendance } from '../services/apiService';
+import { managerAttendanceService } from '../services';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -82,7 +82,7 @@ function ManagerAttendanceAdminPage() {
     setLoading(true);
     try {
       const dateStr = (date ?? selectedDate).format('YYYY-MM-DD');
-      const data = await getManagerAttendanceAll(dateStr);
+      const data = await managerAttendanceService.getAll(dateStr);
       setRecords(Array.isArray(data) ? data : []);
     } catch (err) {
       message.error('Failed to load attendance: ' + err.message);
@@ -120,7 +120,7 @@ function ManagerAttendanceAdminPage() {
           : null,
         reason: values.reason,
       };
-      await overrideManagerAttendance(payload);
+      await managerAttendanceService.override(payload);
       message.success('Attendance override saved');
       setOverrideTarget(null);
       fetchAttendance(selectedDate);

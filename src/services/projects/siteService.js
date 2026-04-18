@@ -1,4 +1,5 @@
 import BaseService from '../base/BaseService';
+import apiClient from '../base/apiClient';
 
 /**
  * Site service.
@@ -13,7 +14,6 @@ class SiteService extends BaseService {
    * @returns {Promise<Array>}
    */
   async getAll() {
-    // TODO: Implement in Phase 4B
     return this.get('/');
   }
 
@@ -23,8 +23,16 @@ class SiteService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getById(id) {
-    // TODO: Implement in Phase 4B
     return this.get(`/${id}`);
+  }
+
+  /**
+   * Get workflow sites (optionally filtered by project).
+   * @param {number|string} [projectId]
+   * @returns {Promise<Array>}
+   */
+  async getWorkflowSites(projectId) {
+    return apiClient.get(projectId ? `/workflow/sites/?project_id=${projectId}` : '/workflow/sites/');
   }
 }
 

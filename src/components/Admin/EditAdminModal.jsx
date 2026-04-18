@@ -327,7 +327,7 @@ function EditAdminModal({ admin, open, onClose, onSaved }) {
       onCancel={onClose}
       footer={null}
       width={640}
-      destroyOnClose
+      destroyOnHidden
     >
       <Tabs
         activeKey={activeTab}
