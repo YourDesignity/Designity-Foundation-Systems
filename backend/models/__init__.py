@@ -21,7 +21,6 @@ from backend.models.materials import (
 from backend.models.messaging import Conversation, Message
 from backend.models.payroll import Deduction, Overtime
 from backend.models.projects import (
-    Contract,
     ContractItem,
     ContractSpec,
     ContractWorkforce,
@@ -32,6 +31,21 @@ from backend.models.projects import (
 from backend.models.role_contracts import ContractRoleSlot, DailyRoleFulfillment, RoleFulfillmentRecord
 from backend.models.settings import CompanySettings
 from backend.models.vehicles import FuelLog, MaintenanceLog, TripLog, Vehicle, VehicleExpense
+
+# Contract types (Phase 5A)
+from backend.models.contracts import (
+    BaseContract,
+    GoodsContract,
+    HybridContract,
+    LabourContract,
+    RoleBasedContract,
+)
+
+# Keep backward compatibility with old ``Contract`` import.
+# ``BaseContract`` is the polymorphic root stored in the same
+# ``contracts`` collection, so all existing query/save code
+# continues to work transparently.
+Contract = BaseContract
 
 __all__ = [
     "Counter",
@@ -70,6 +84,13 @@ __all__ = [
     "ContractRoleSlot",
     "RoleFulfillmentRecord",
     "DailyRoleFulfillment",
+    # Contract polymorphism (Phase 5A)
+    "BaseContract",
+    "LabourContract",
+    "RoleBasedContract",
+    "GoodsContract",
+    "HybridContract",
+    # Backward-compatible alias
     "Contract",
     "EmployeeAssignment",
     "TemporaryAssignment",
