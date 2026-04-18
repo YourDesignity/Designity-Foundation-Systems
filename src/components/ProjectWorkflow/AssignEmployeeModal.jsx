@@ -102,7 +102,7 @@ const AssignEmployeeModal = ({ visible, site, onCancel, onSuccess }) => {
       okButtonProps={{ disabled: selectedEmployeeIds.length === 0 }}
       width={600}
     >
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
         <div>
           <Text type="secondary">Site: </Text>
           <Text strong>{site?.name}</Text>

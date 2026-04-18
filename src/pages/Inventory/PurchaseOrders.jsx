@@ -227,10 +227,10 @@ const PurchaseOrders = () => {
                     <Card size="small"><Statistic title="Total Orders" value={orders.length} /></Card>
                 </Col>
                 <Col xs={12} sm={6}>
-                    <Card size="small"><Statistic title="Pending" value={pendingCount} valueStyle={{ color: pendingCount > 0 ? '#fa8c16' : undefined }} /></Card>
+                    <Card size="small"><Statistic title="Pending" value={pendingCount} styles={{ content: { color: pendingCount > 0 ? '#fa8c16' : undefined }}} /></Card>
                 </Col>
                 <Col xs={12} sm={6}>
-                    <Card size="small"><Statistic title="Received" value={receivedCount} valueStyle={{ color: '#52c41a' }} /></Card>
+                    <Card size="small"><Statistic title="Received" value={receivedCount} styles={{ content: { color: '#52c41a' }}} /></Card>
                 </Col>
                 <Col xs={12} sm={6}>
                     <Card size="small"><Statistic title="Total Ordered (KD)" value={totalOrdered.toFixed(3)} /></Card>

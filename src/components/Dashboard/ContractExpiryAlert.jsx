@@ -43,7 +43,7 @@ const ContractExpiryAlert = ({ contract }) => {
 
   return (
     <Alert
-      message={message}
+      title={message}
       type={type}
       showIcon={false}
       style={{ marginBottom: 8, borderRadius: 8 }}

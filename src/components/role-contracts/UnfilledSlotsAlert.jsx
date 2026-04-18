@@ -7,7 +7,7 @@ const UnfilledSlotsAlert = ({ count = 0 }) => {
     <Alert
       type="warning"
       showIcon
-      message={
+      title={
         <Space>
           <span>Unfilled role slots detected</span>
           <Badge count={count} style={{ backgroundColor: '#EF4444' }} />

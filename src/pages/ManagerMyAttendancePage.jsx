@@ -18,9 +18,6 @@ import {
 } from '../services/apiService';
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
-
-// ---------- helpers ----------
 
 const timeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
@@ -154,7 +151,7 @@ function SegmentCard({ segment, config, attendance, onCheckIn, checkingIn }) {
 
   return (
     <Card style={cardStyle} styles={{ body: { padding: '16px' } }}>
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space orientation="vertical" style={{ width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Space>
             {meta.icon}
@@ -372,7 +369,7 @@ function ManagerMyAttendancePage() {
     if (!checkIn && !status) return <Text type="secondary">–</Text>;
     const statusKey = (status || '').toLowerCase().replace(' ', '_');
     return (
-      <Space direction="vertical" size={0}>
+      <Space orientation="vertical" size={0}>
         {checkIn && <Text style={{ fontSize: 12 }}>{formatTime12(checkIn.includes('T') ? checkIn.split('T')[1] : checkIn)}</Text>}
         {status && <Tag color={SEG_STATUS_COLORS[statusKey] || 'default'} style={{ fontSize: 11 }}>{SEG_STATUS_LABELS[statusKey] || status}</Tag>}
       </Space>
@@ -634,20 +631,20 @@ function ManagerMyAttendancePage() {
 
       {/* ── Section 5: My Configuration ── */}
       <Card className="criclebox mb-24" style={{ marginBottom: 24 }}>
-        <Collapse ghost>
-          <Panel
-            header={
+        <Collapse
+          ghost
+          items={[{
+            key: 'config',
+            label: (
               <Space>
                 <SettingOutlined />
                 <Text strong>My Attendance Configuration</Text>
               </Space>
-            }
-            key="config"
-          >
-            {loadingConfig ? (
+            ),
+            children: loadingConfig ? (
               <Spin />
             ) : config ? (
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <Row gutter={[16, 8]}>
                   <Col xs={24} sm={8}>
                     <Text type="secondary">Morning Window</Text>
@@ -672,9 +669,9 @@ function ManagerMyAttendancePage() {
               </Space>
             ) : (
               <Text type="secondary">Configuration not available.</Text>
-            )}
-          </Panel>
-        </Collapse>
+            ),
+          }]}
+        />
       </Card>
 
       {/* Day detail modal */}
@@ -685,7 +682,7 @@ function ManagerMyAttendancePage() {
         footer={null}
       >
         {selectedDay && (
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <div>
               <Text type="secondary">Day Status: </Text>
               {(() => {

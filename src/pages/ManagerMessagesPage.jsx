@@ -565,7 +565,7 @@ const ManagerMessagesPage = () => {
         footer={null}
         width={600}
       >
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <Space orientation="vertical" style={{ width: '100%' }} size="large">
           <div>
             <Text strong>Send Message To:</Text>
             <Select

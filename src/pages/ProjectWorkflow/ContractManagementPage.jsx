@@ -146,13 +146,14 @@ const ContractManagementPage = () => {
 
   return (
     <div style={{ padding: 24, background: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>
-          <Link to="/project-workflow">Projects</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>{project?.project_code || `Project ${projectId}`}</Breadcrumb.Item>
-        <Breadcrumb.Item>Contracts</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[
+          { title: <Link to="/project-workflow">Projects</Link> },
+          { title: project?.project_code || `Project ${projectId}` },
+          { title: 'Contracts' },
+        ]}
+      />
 
       <div
         style={{

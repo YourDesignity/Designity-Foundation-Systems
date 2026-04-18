@@ -216,7 +216,7 @@ function AdminManagementPage() {
   return (
     <div className="layout-content">
       {/* --- Header Card --- */}
-      <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+      <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
         <Row align="middle" justify="space-between">
           <Col>
             <Title level={4} style={{ margin: 0 }}>Admin Management</Title>
@@ -238,7 +238,7 @@ function AdminManagementPage() {
       {/* --- Admins List Table --- */}
       <Row gutter={[24, 0]}>
         <Col xs={24} xl={24} className="mb-24">
-          <Card bordered={false} className="criclebox tablespace mb-24">
+          <Card variant="borderless" className="criclebox tablespace mb-24">
             <div className="table-responsive">
               <Table
                 columns={columns}

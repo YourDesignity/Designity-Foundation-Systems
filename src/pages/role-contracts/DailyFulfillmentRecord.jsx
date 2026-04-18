@@ -261,7 +261,7 @@ const DailyFulfillmentRecord = () => {
           <Alert
             type="info"
             showIcon
-            message={`${contractDetails.contract_code} • ${contractDetails.total_role_slots} slots • KD ${Number(contractDetails.total_daily_cost || 0).toFixed(2)} daily`}
+            title={`${contractDetails.contract_code} • ${contractDetails.total_role_slots} slots • KD ${Number(contractDetails.total_daily_cost || 0).toFixed(2)} daily`}
             style={{ marginBottom: 12 }}
           />
         )}

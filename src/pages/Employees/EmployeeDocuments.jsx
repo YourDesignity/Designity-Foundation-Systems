@@ -148,7 +148,7 @@ const EmployeeDocuments = () => {
     if (!employee) {
         return (
             <div style={{ padding: 24 }}>
-                <Alert type="error" message="Employee not found" showIcon />
+                <Alert type="error" title="Employee not found" showIcon />
                 <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/employees')} style={{ marginTop: 16 }}>
                     Back to Employees
                 </Button>
@@ -197,7 +197,7 @@ const EmployeeDocuments = () => {
                         </Col>
                         <Col xs={24} md={12}>
                             <Card size="small" title="Actions">
-                                <Space direction="vertical" style={{ width: '100%' }}>
+                                <Space orientation="vertical" style={{ width: '100%' }}>
                                     <Upload
                                         accept=".pdf,.jpg,.jpeg,.png"
                                         beforeUpload={(file) => handleUpload(docType.key, file)}

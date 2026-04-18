@@ -322,7 +322,7 @@ const MessagePage = () => {
                 />
               </Space>
             }
-            bordered={false}
+            variant="borderless"
             styles={{ body: { 
               height: 'calc(100% - 60px)', 
               overflowY: 'auto', 
@@ -426,7 +426,7 @@ const MessagePage = () => {
                 </Space>
               ) : "Select a conversation"
             }
-            bordered={false}
+            variant="borderless"
             styles={{ body: { 
               height: 'calc(100% - 60px)', 
               display: 'flex', 
@@ -592,7 +592,7 @@ const MessagePage = () => {
         width={700}
         okButtonProps={{ disabled: !modalMessage.trim() }}
       >
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <Space orientation="vertical" style={{ width: '100%' }} size="large">
           
           {/* MESSAGE TYPE SELECTOR */}
           <div>
@@ -806,7 +806,7 @@ const MessagePage = () => {
             <Text strong style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>
               📋 Message Summary:
             </Text>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Text style={{ fontSize: 12 }}>
                 <Text strong>Type:</Text> {
                   messageType === 'broadcast_all' ? 'Broadcast to Everyone' :

@@ -214,17 +214,17 @@ function VehicleManagementPage() {
       {/* --- QUICK STATS --- */}
       <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={uiStyles.actionCard}>
+          <Card variant="borderless" style={uiStyles.actionCard}>
             <Statistic title="Active Fleet" value={vehicles.length} prefix={<CarOutlined style={{color: '#1890ff'}} />} />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={uiStyles.actionCard}>
+          <Card variant="borderless" style={uiStyles.actionCard}>
             <Statistic title="Live Trips" value={activeTripsCount} styles={{ content: { color: '#3f8600' } }} prefix={<RiseOutlined />} />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={uiStyles.actionCard}>
+          <Card variant="borderless" style={uiStyles.actionCard}>
             <Statistic title="Total Maintenance" value={totalFleetValue} precision={2} prefix={<DollarOutlined />} />
           </Card>
         </Col>
@@ -263,8 +263,8 @@ function VehicleManagementPage() {
 
         {/* --- SIDEBAR ACTIONS --- */}
         <Col xs={24} lg={7}>
-          <Card title={<Text strong><PlusOutlined /> Quick Operations</Text>} bordered={false} style={uiStyles.actionCard}>
-             <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Card title={<Text strong><PlusOutlined /> Quick Operations</Text>} variant="borderless" style={uiStyles.actionCard}>
+             <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <Button type="primary" size="large" block icon={<HistoryOutlined />} style={{ height: '50px', borderRadius: '8px' }} onClick={()=>setModals({...modals, tripStart:true})}>Start Daily Trip</Button>
                 <Button size="large" block icon={<WalletOutlined />} style={{ height: '50px', borderRadius: '8px', color: '#d46b08', borderColor: '#ffd591', background: '#fff7e6' }} onClick={()=>setModals({...modals, expense:true})}>Log Toll/Parking</Button>
                 <Button size="large" block icon={<FireOutlined />} style={{ height: '50px', borderRadius: '8px', color: '#389e0d', borderColor: '#b7eb8f', background: '#f6ffed' }} onClick={()=>setModals({...modals, fuel:true})}>Refuel Entry</Button>

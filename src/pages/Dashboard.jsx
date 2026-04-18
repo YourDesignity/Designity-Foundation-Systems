@@ -43,7 +43,7 @@ const Dashboard = () => {
     return (
       <Alert
         type="error"
-        message="Dashboard Error"
+        title="Dashboard Error"
         description={error.message || 'Failed to load dashboard data'}
         action={<Button onClick={loadData} icon={<ReloadOutlined />}>Retry</Button>}
         style={{ margin: 24 }}

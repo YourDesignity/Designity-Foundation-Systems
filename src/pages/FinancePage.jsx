@@ -384,7 +384,7 @@ const FinancePage = () => {
                             value={ov.total_costs}
                             precision={2}
                             suffix="KWD"
-                            valueStyle={{ color: '#cf1322' }}
+                            styles={{ content: { color: '#cf1322' }}}
                         />
                         <div className="kpi-sub">
                             MoM <TrendBadge value={typeof ov.mom_change === 'number' ? -ov.mom_change : null} />
@@ -398,7 +398,7 @@ const FinancePage = () => {
                             value={ov.net_profit}
                             precision={2}
                             suffix="KWD"
-                            valueStyle={{ color: profitPositive ? '#3f8600' : '#cf1322' }}
+                            styles={{ content: { color: profitPositive ? '#3f8600' : '#cf1322' }}}
                         />
                         <div className="kpi-sub">
                             <TrendBadge value={ov.mom_change} />
@@ -480,7 +480,7 @@ const FinancePage = () => {
                         className="finance-chart-card"
                     >
                         {atRisk.length === 0 ? (
-                            <Alert type="success" message="All contracts are operating profitably." showIcon />
+                            <Alert type="success" title="All contracts are operating profitably." showIcon />
                         ) : (
                             <div className="at-risk-list">
                                 {atRisk.map(c => (
