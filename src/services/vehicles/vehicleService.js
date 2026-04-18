@@ -1,4 +1,5 @@
 import BaseService from '../base/BaseService';
+import apiClient from '../base/apiClient';
 
 /**
  * Vehicle service.
@@ -59,7 +60,9 @@ class VehicleService extends BaseService {
    * @returns {Promise<Object>}
    */
   async endTrip(tripId, endMileage, endCondition) {
-    return this.post(`/trip/end/${tripId}?end_mileage=${endMileage}&end_condition=${endCondition}`);
+    return apiClient.post(`${this.baseUrl}/trip/end/${tripId}`, {}, {
+      params: { end_mileage: endMileage, end_condition: endCondition },
+    });
   }
 
   /**
@@ -106,6 +109,8 @@ class VehicleService extends BaseService {
 
   /**
    * Add a vehicle expense.
+   * Note: The backend POST endpoint uses the singular form `/expense`
+   * while the GET endpoint uses the plural `/expenses`.
    * @param {Object} data
    * @returns {Promise<Object>}
    */
