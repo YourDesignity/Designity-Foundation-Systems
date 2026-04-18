@@ -13,11 +13,19 @@ from backend.models import (
     Invoice, Conversation, Message, ManagerProfile,
     ManagerAttendanceConfig, ManagerAttendance, CompanySettings,
     # NEW: Project Workflow System (Phase 1)
-    Project, Contract, EmployeeAssignment, TemporaryAssignment,
+    Project, EmployeeAssignment, TemporaryAssignment,
     # NEW: Material Management
     Material, Supplier, PurchaseOrder, MaterialMovement,
     # NEW: Role-Based Labour Contracts (Phase 1)
     DailyRoleFulfillment,
+)
+# Contract types (Phase 5A) – registered individually so Beanie can
+# resolve the polymorphic ``_type`` discriminator for each sub-class.
+from backend.models.contracts import (
+    LabourContract,
+    RoleBasedContract,
+    GoodsContract,
+    HybridContract,
 )
 
 # Load Environment Variables
@@ -58,11 +66,16 @@ async def init_db():
                 Invoice, Conversation, Message, ManagerProfile,
                 ManagerAttendanceConfig, ManagerAttendance, CompanySettings,
                 # NEW: Project Workflow System (Phase 1)
-                Project, Contract, EmployeeAssignment, TemporaryAssignment,
+                Project, EmployeeAssignment, TemporaryAssignment,
                 # NEW: Material Management
                 Material, Supplier, PurchaseOrder, MaterialMovement,
                 # NEW: Role-Based Labour Contracts (Phase 1)
                 DailyRoleFulfillment,
+                # Contract types (Phase 5A) – replaces the old monolithic Contract
+                LabourContract,
+                RoleBasedContract,
+                GoodsContract,
+                HybridContract,
             ]
         )
         print(f"✅ Connected to MongoDB at {DB_NAME}")
