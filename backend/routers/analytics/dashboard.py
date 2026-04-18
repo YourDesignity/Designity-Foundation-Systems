@@ -54,3 +54,33 @@ async def get_workflow_summary():
 async def get_profit_loss_summary():
     """Returns comprehensive profit & loss analytics."""
     return await _get_service().get_profit_loss_summary()
+
+
+@router.get("/metrics", dependencies=[Depends(get_current_active_user)])
+async def get_dashboard_metrics():
+    """Returns aggregated dashboard summary metrics (employees, projects, revenue, costs, attendance)."""
+    return await _get_service().get_metrics_summary()
+
+
+@router.get("/attendance-trend", dependencies=[Depends(get_current_active_user)])
+async def get_attendance_trend(days: int = 30):
+    """Returns attendance rate trend for the last N days as chart-ready labels and data arrays."""
+    return await _get_service().get_attendance_trend_chart(days)
+
+
+@router.get("/revenue-trend", dependencies=[Depends(get_current_active_user)])
+async def get_revenue_trend(months: int = 12):
+    """Returns monthly revenue trend for the last N months as chart-ready labels and data arrays."""
+    return await _get_service().get_revenue_trend_chart(months)
+
+
+@router.get("/cost-breakdown", dependencies=[Depends(get_current_active_user)])
+async def get_cost_breakdown():
+    """Returns cost breakdown by category (Labour, Materials, Vehicles, Other) for the current month."""
+    return await _get_service().get_cost_breakdown_chart()
+
+
+@router.get("/project-metrics", dependencies=[Depends(get_current_active_user)])
+async def get_project_metrics_summary():
+    """Returns project and contract count metrics by status and type."""
+    return await _get_service().get_project_metrics_summary()

@@ -649,3 +649,207 @@ class DashboardService(BaseService):
             "monthly_trend": monthly_trend,
             "at_risk": at_risk,
         }
+
+    # ====================================================================
+    # PHASE 4G DASHBOARD CHART ENDPOINTS
+    # ====================================================================
+
+    async def get_metrics_summary(self) -> dict:
+        """Return aggregated dashboard summary metrics for the Phase 4G overview cards."""
+        from calendar import monthrange
+
+        from backend.models import (
+            Attendance,
+            Contract,
+            DailyRoleFulfillment,
+            Employee,
+            Invoice,
+            Project,
+            Vehicle,
+        )
+        from backend.services.finance.invoice_service import InvoiceService
+
+        today = date.today()
+        _, last_day = monthrange(today.year, today.month)
+        start_of_month = date(today.year, today.month, 1)
+
+        total_employees = await Employee.find(Employee.status == "Active").count()
+        active_projects = await Project.find(Project.status == "Active").count()
+        active_contracts = await Contract.find(Contract.status == "Active").count()
+        total_vehicles = await Vehicle.find().count()
+
+        # Pending invoices = all non-paid, non-voided invoices
+        all_invoices = await Invoice.find().to_list()
+        pending_invoices = sum(
+            1 for inv in all_invoices if inv.status not in ("Paid", "Voided")
+        )
+
+        # Revenue this month (sum of paid invoices)
+        invoice_service = InvoiceService()
+        revenue_this_month = await invoice_service.calculate_total_revenue(
+            today.month, today.year
+        )
+
+        # Costs this month from DailyRoleFulfillment records
+        fulfillments_this_month = await DailyRoleFulfillment.find(
+            DailyRoleFulfillment.date >= self._to_midnight(start_of_month),
+            DailyRoleFulfillment.date <= self._to_midnight(date(today.year, today.month, last_day)),
+        ).to_list()
+        costs_this_month = sum(f.total_daily_cost for f in fulfillments_this_month)
+
+        # Attendance rate today
+        today_attendance = await Attendance.find_all().to_list()
+        today_rows = [row for row in today_attendance if self._date_string_matches(row.date, today)]
+        if today_rows:
+            present_count = sum(1 for row in today_rows if (row.status or "").lower() == "present")
+            attendance_rate_today = round(present_count / len(today_rows), 4)
+        else:
+            attendance_rate_today = 0.0
+
+        # Unfilled role slots today
+        recent_fulfillments = await DailyRoleFulfillment.find(
+            DailyRoleFulfillment.date >= self._to_midnight(today),
+        ).to_list()
+        unfilled_role_slots = sum(len(f.unfilled_slots) for f in recent_fulfillments)
+
+        return {
+            "total_employees": total_employees,
+            "active_projects": active_projects,
+            "active_contracts": active_contracts,
+            "total_vehicles": total_vehicles,
+            "pending_invoices": pending_invoices,
+            "revenue_this_month": round(float(revenue_this_month), 2),
+            "costs_this_month": round(costs_this_month, 2),
+            "profit_this_month": round(float(revenue_this_month) - costs_this_month, 2),
+            "attendance_rate_today": attendance_rate_today,
+            "unfilled_role_slots": unfilled_role_slots,
+        }
+
+    async def get_attendance_trend_chart(self, days: int = 30) -> dict:
+        """Return attendance trend data in chart format (labels + data arrays)."""
+        if days <= 0:
+            self.raise_bad_request("days must be greater than zero")
+
+        from backend.models import Attendance
+
+        records = await Attendance.find_all().to_list()
+        today = date.today()
+        start = today - timedelta(days=days - 1)
+
+        labels: list[str] = []
+        data: list[float] = []
+
+        for idx in range(days):
+            point = start + timedelta(days=idx)
+            day_rows = [row for row in records if self._date_string_matches(row.date, point)]
+            present_count = sum(1 for row in day_rows if (row.status or "").lower() == "present")
+            rate = round(present_count / len(day_rows), 4) if day_rows else 0.0
+            labels.append(point.isoformat())
+            data.append(rate)
+
+        return {"labels": labels, "data": data}
+
+    async def get_revenue_trend_chart(self, months: int = 12) -> dict:
+        """Return monthly revenue trend in chart format (labels + data arrays)."""
+        if months <= 0:
+            self.raise_bad_request("months must be greater than zero")
+
+        from backend.services.finance.invoice_service import InvoiceService
+
+        invoice_service = InvoiceService()
+        today = date.today()
+        labels: list[str] = []
+        data: list[float] = []
+
+        for offset in range(months - 1, -1, -1):
+            month = today.month - offset
+            year = today.year
+            while month <= 0:
+                month += 12
+                year -= 1
+            amount = await invoice_service.calculate_total_revenue(month, year)
+            labels.append(f"{year:04d}-{month:02d}")
+            data.append(round(float(amount), 2))
+
+        return {"labels": labels, "data": data}
+
+    async def get_cost_breakdown_chart(self) -> dict:
+        """Return cost breakdown by category for the current month in chart format."""
+        from calendar import monthrange
+
+        from backend.models import DailyRoleFulfillment, MaterialMovement, VehicleExpense
+
+        today = date.today()
+        _, last_day = monthrange(today.year, today.month)
+        start_of_month = date(today.year, today.month, 1)
+        end_of_month = date(today.year, today.month, last_day)
+
+        # Labour costs from DailyRoleFulfillment
+        fulfillments = await DailyRoleFulfillment.find(
+            DailyRoleFulfillment.date >= self._to_midnight(start_of_month),
+            DailyRoleFulfillment.date <= self._to_midnight(end_of_month),
+        ).to_list()
+        labour_cost = sum(f.total_daily_cost for f in fulfillments)
+
+        # Material costs from OUT movements (use created_at for month filtering)
+        all_movements = await MaterialMovement.find(
+            MaterialMovement.movement_type == "OUT"
+        ).to_list()
+        material_cost = sum(
+            float(m.total_cost or 0)
+            for m in all_movements
+            if m.created_at
+            and m.created_at.year == today.year
+            and m.created_at.month == today.month
+        )
+
+        # Vehicle costs from VehicleExpense (date is an ISO string)
+        all_expenses = await VehicleExpense.find_all().to_list()
+        vehicle_cost = 0.0
+        for expense in all_expenses:
+            try:
+                exp_date = date.fromisoformat(expense.date) if expense.date else None
+            except ValueError:
+                exp_date = None
+            if exp_date and start_of_month <= exp_date <= end_of_month:
+                vehicle_cost += float(expense.amount or 0)
+
+        return {
+            "labels": ["Labour", "Materials", "Vehicles", "Other"],
+            "data": [
+                round(labour_cost, 2),
+                round(material_cost, 2),
+                round(vehicle_cost, 2),
+                0.0,
+            ],
+        }
+
+    async def get_project_metrics_summary(self) -> dict:
+        """Return project and contract count metrics."""
+        from backend.models import Contract, Project, Site
+
+        all_projects = await Project.find().to_list()
+        all_contracts = await Contract.find().to_list()
+        total_sites = await Site.find().count()
+
+        labour_contracts = sum(1 for c in all_contracts if c.contract_type == "Labour")
+
+        return {
+            "total_projects": len(all_projects),
+            "active_projects": sum(1 for p in all_projects if p.status == "Active"),
+            "completed_projects": sum(1 for p in all_projects if p.status == "Completed"),
+            "on_hold_projects": sum(1 for p in all_projects if p.status == "On Hold"),
+            "total_contracts": len(all_contracts),
+            "labour_contracts": labour_contracts,
+            "goods_contracts": len(all_contracts) - labour_contracts,
+            "total_sites": total_sites,
+        }
+
+    # ====================================================================
+    # INTERNAL HELPER
+    # ====================================================================
+
+    @staticmethod
+    def _to_midnight(d: date) -> datetime:
+        """Convert a date to a midnight datetime for DailyRoleFulfillment queries."""
+        return datetime(d.year, d.month, d.day, 0, 0, 0)
