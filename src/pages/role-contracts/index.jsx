@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Badge,
@@ -20,8 +20,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
-import { getSites } from '../../services/apiService';
-import { getRoleContractsList, getUnfilledRoleSlots } from '../../services/roleContractsService';
+import { useSites } from '../../hooks/useSites';
+import { useRoleContracts, useUnfilledSlots } from '../../hooks/useRoleContracts';
 import ContractRoleCard from '../../components/role-contracts/ContractRoleCard';
 import UnfilledSlotsAlert from '../../components/role-contracts/UnfilledSlotsAlert';
 
@@ -31,38 +31,20 @@ const RoleContractFulfillmentOverview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [contracts, setContracts] = useState([]);
-  const [sites, setSites] = useState([]);
-  const [unfilledRecords, setUnfilledRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
-
   const [search, setSearch] = useState('');
   const [siteFilter, setSiteFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const canAccess = ['Site Manager', 'Admin', 'SuperAdmin'].includes(user?.role);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [contractList, unfilled, siteList] = await Promise.all([
-        getRoleContractsList(),
-        getUnfilledRoleSlots().catch(() => []),
-        getSites().catch(() => []),
-      ]);
-      setContracts(contractList || []);
-      setUnfilledRecords(Array.isArray(unfilled) ? unfilled : []);
-      setSites(Array.isArray(siteList) ? siteList : []);
-    } catch (error) {
-      message.error(`Failed to load role contracts: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // React Query hooks
+  const { data: contracts = [], isLoading: loadingContracts, refetch: refetchContracts } = useRoleContracts();
+  const { data: unfilledData = [], isLoading: loadingUnfilled } = useUnfilledSlots();
+  const { data: siteList = [] } = useSites();
 
-  useEffect(() => {
-    if (canAccess) loadData();
-  }, [canAccess, loadData]);
+  const loading = loadingContracts || loadingUnfilled;
+  const sites = siteList;
+  const unfilledRecords = Array.isArray(unfilledData) ? unfilledData : [];
 
   const siteNameById = useMemo(() => {
     return (sites || []).reduce((acc, site) => {
@@ -200,7 +182,7 @@ const RoleContractFulfillmentOverview = () => {
             />
           </Col>
           <Col xs={24} md={4}>
-            <Button type="primary" onClick={loadData} block>Refresh</Button>
+            <Button type="primary" onClick={refetchContracts} block>Refresh</Button>
           </Col>
         </Row>
       </Card>
