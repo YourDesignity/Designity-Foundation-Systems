@@ -39,10 +39,7 @@ class PayrollService:
         calculator = self.CALCULATORS.get(calculator_type)
 
         if not calculator:
-            logger.warning(
-                "Unknown salary strategy '%s'; falling back to 'configurable'.",
-                calculator_type,
-            )
+            logger.warning("Unknown salary strategy encountered; falling back to 'configurable'.")
             calculator = self.CALCULATORS["configurable"]
 
         return await calculator.calculate_monthly_salary(
