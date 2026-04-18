@@ -15,6 +15,7 @@ import {
   HomeOutlined,
   KeyOutlined,
 } from "@ant-design/icons";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import "../styles/LoginPage.css";
@@ -24,8 +25,6 @@ const API_BASE_URL = "http://127.0.0.1:8000";
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [registerLoading, setRegisterLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
@@ -47,51 +46,52 @@ const LoginPage = () => {
     }
   }, [form]);
 
-  const onFinish = async (values) => {
-    setLoading(true);
-    try {
-      await login(values.email, values.password);
-
-      // Handle Remember Me
+  const loginMutation = useMutation({
+    mutationFn: ({ email, password }) => login(email, password),
+    onSuccess: (_, variables) => {
       if (rememberMe) {
-        localStorage.setItem("montreal_email", values.email);
-        localStorage.setItem("montreal_password", btoa(values.password));
+        localStorage.setItem("montreal_email", variables.email);
+        localStorage.setItem("montreal_password", btoa(variables.password));
         localStorage.setItem("montreal_remember", "true");
       } else {
         localStorage.removeItem("montreal_email");
         localStorage.removeItem("montreal_password");
         localStorage.removeItem("montreal_remember");
       }
-
       message.success("Login successful!");
       navigate("/dashboard");
-    } catch (error) {
+    },
+    onError: (error) => {
       message.error(error.message || "Failed to log in.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
-  const handleRegister = async (values) => {
-    setRegisterLoading(true);
-    try {
-      await axios.post(`${API_BASE_URL}/auth/register-admin`, {
+  const registerMutation = useMutation({
+    mutationFn: (values) =>
+      axios.post(`${API_BASE_URL}/auth/register-admin`, {
         email: values.email,
         password: values.password,
         full_name: values.full_name,
         company_name: values.company_name,
         setup_key: values.setup_key,
-      });
-
+      }),
+    onSuccess: () => {
       message.success("SuperAdmin registered successfully! Please login.");
       registerForm.resetFields();
       setActiveTab("login");
-    } catch (error) {
+    },
+    onError: (error) => {
       const errorMsg = error.response?.data?.detail || "Registration failed";
       message.error(errorMsg);
-    } finally {
-      setRegisterLoading(false);
-    }
+    },
+  });
+
+  const onFinish = (values) => {
+    loginMutation.mutate({ email: values.email, password: values.password });
+  };
+
+  const handleRegister = (values) => {
+    registerMutation.mutate(values);
   };
 
   const tabItems = [
@@ -138,7 +138,7 @@ const LoginPage = () => {
             <Button
               type="primary"
               htmlType="submit"
-              loading={loading}
+              loading={loginMutation.isPending}
               block
               size="large"
               className="login-btn"
@@ -253,7 +253,7 @@ const LoginPage = () => {
             <Button
               type="primary"
               htmlType="submit"
-              loading={registerLoading}
+              loading={registerMutation.isPending}
               block
               size="large"
               className="login-btn"

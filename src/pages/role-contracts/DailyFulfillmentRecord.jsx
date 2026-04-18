@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Breadcrumb,
@@ -23,8 +23,8 @@ import {
 import dayjs from 'dayjs';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getEmployees } from '../../services/apiService';
-import { getContractRoleConfiguration, getRoleContractsList, recordDailyFulfillment } from '../../services/roleContractsService';
+import { useEmployees } from '../../hooks/useEmployees';
+import { useRoleContracts, useRoleContract, useRecordDailyFulfillment } from '../../hooks/useRoleContracts';
 
 const { Title, Text } = Typography;
 const attendanceOptions = ['Present', 'Absent', 'Half-Day', 'Leave'];
@@ -41,58 +41,37 @@ const DailyFulfillmentRecord = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [contracts, setContracts] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [selectedContractId, setSelectedContractId] = useState(Number(searchParams.get('contract')) || undefined);
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [contractDetails, setContractDetails] = useState(null);
   const [rows, setRows] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const canAccess = ['Site Manager', 'Admin', 'SuperAdmin'].includes(user?.role);
 
-  const loadBase = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [contractList, employeeList] = await Promise.all([getRoleContractsList(), getEmployees()]);
-      setContracts(contractList || []);
-      setEmployees(employeeList || []);
-    } catch (error) {
-      message.error(`Failed to load setup data: ${error.message}`);
-    } finally {
-      setLoading(false);
+  // React Query hooks
+  const { data: contracts = [], isLoading: loadingContracts } = useRoleContracts();
+  const { data: employeeList = [] } = useEmployees();
+  const { data: contractDetails } = useRoleContract(selectedContractId);
+  const recordDailyFulfillmentMutation = useRecordDailyFulfillment();
+
+  const loading = loadingContracts;
+  const employees = employeeList;
+
+  // Initialise rows when contract details change
+  useEffect(() => {
+    if (!contractDetails) {
+      setRows([]);
+      return;
     }
-  }, []);
-
-  useEffect(() => {
-    if (canAccess) loadBase();
-  }, [canAccess, loadBase]);
-
-  useEffect(() => {
-    const fetchContractDetails = async () => {
-      if (!selectedContractId) return;
-      try {
-        const details = await getContractRoleConfiguration(selectedContractId);
-        setContractDetails(details);
-        setRows((details.role_slots || []).map((slot) => ({
-          slot_id: slot.slot_id,
-          designation: slot.designation,
-          daily_rate: Number(slot.daily_rate || 0),
-          employee_id: null,
-          attendance_status: 'Present',
-          is_filled: false,
-          notes: '',
-        })));
-      } catch (error) {
-        setContractDetails(null);
-        setRows([]);
-        message.error(`Failed to load role slots: ${error.message}`);
-      }
-    };
-
-    fetchContractDetails();
-  }, [selectedContractId]);
+    setRows((contractDetails.role_slots || []).map((slot) => ({
+      slot_id: slot.slot_id,
+      designation: slot.designation,
+      daily_rate: Number(slot.daily_rate || 0),
+      employee_id: null,
+      attendance_status: 'Present',
+      is_filled: false,
+      notes: '',
+    })));
+  }, [contractDetails]);
 
   const contractOptions = useMemo(() => contracts.map((contract) => ({ value: contract.contract_id, label: `${contract.contract_code} (${contract.total_role_slots || 0} slots)` })), [contracts]);
 
@@ -170,15 +149,11 @@ const DailyFulfillmentRecord = () => {
       }),
     };
 
-    setSubmitting(true);
-    try {
-      const response = await recordDailyFulfillment(payload);
-      message.success(`Fulfillment recorded (UID: ${response.uid || response.fulfillment_uid || 'created'})`);
-    } catch (error) {
-      message.error(`Submission failed: ${error.message}`);
-    } finally {
-      setSubmitting(false);
-    }
+    recordDailyFulfillmentMutation.mutate(payload, {
+      onSuccess: (response) => {
+        message.success(`Fulfillment recorded (UID: ${response?.uid || response?.fulfillment_uid || 'created'})`);
+      },
+    });
   };
 
   const columns = [
@@ -315,7 +290,7 @@ const DailyFulfillmentRecord = () => {
       </Card>
 
       <Space>
-        <Button type="primary" loading={submitting} onClick={submit}>Submit Fulfillment</Button>
+        <Button type="primary" loading={recordDailyFulfillmentMutation.isPending} onClick={submit}>Submit Fulfillment</Button>
         <Button onClick={() => window.location.reload()}>Record Another Day</Button>
         <Button onClick={() => navigate('/role-contracts/monthly-report')}>View Report</Button>
       </Space>

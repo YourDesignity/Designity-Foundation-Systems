@@ -18,7 +18,9 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useAuth } from '../../context/AuthContext';
-import { dailyFulfillmentService, employeeService, roleContractsService } from '../../services';
+import { useEmployees } from '../../hooks/useEmployees';
+import { useRoleContracts, useAssignEmployeeToSlot, useSwapEmployeeInSlot } from '../../hooks/useRoleContracts';
+import { dailyFulfillmentService } from '../../services';
 import SlotAssignmentModal from '../../components/role-contracts/SlotAssignmentModal';
 import EmployeeSwapModal from '../../components/role-contracts/EmployeeSwapModal';
 
@@ -28,8 +30,6 @@ const SlotManagement = () => {
   const { user } = useAuth();
   const canAccess = ['Site Manager', 'Admin', 'SuperAdmin'].includes(user?.role);
 
-  const [contracts, setContracts] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [contractId, setContractId] = useState();
   const [date, setDate] = useState(dayjs());
   const [record, setRecord] = useState(null);
@@ -37,18 +37,17 @@ const SlotManagement = () => {
 
   const [assignSlot, setAssignSlot] = useState(null);
   const [swapSlot, setSwapSlot] = useState(null);
-  const [saving, setSaving] = useState(false);
+
+  // React Query hooks
+  const { data: contracts = [] } = useRoleContracts();
+  const { data: employees = [] } = useEmployees();
+  const assignMutation = useAssignEmployeeToSlot();
+  const swapMutation = useSwapEmployeeInSlot();
 
   React.useEffect(() => {
-    if (!canAccess) return;
-    Promise.all([roleContractsService.getRoleContractsList(), employeeService.getAll()])
-      .then(([contractList, employeeList]) => {
-        setContracts(contractList || []);
-        setEmployees(employeeList || []);
-        if (!contractId && contractList?.length) setContractId(contractList[0].contract_id);
-      })
-      .catch((error) => message.error(`Failed to load selectors: ${error.message}`));
-  }, [canAccess, contractId]);
+    if (!canAccess || contracts.length === 0) return;
+    if (!contractId) setContractId(contracts[0]?.contract_id);
+  }, [canAccess, contracts, contractId]);
 
   const loadRecord = async () => {
     if (!contractId) return message.warning('Select a contract first.');
@@ -87,23 +86,24 @@ const SlotManagement = () => {
       return message.error('Selected employee designation does not match slot designation.');
     }
 
-    setSaving(true);
-    try {
-      await dailyFulfillmentService.assignRoleSlotEmployee(record.uid, {
-        slot_id: assignSlot.slot_id,
-        employee_id: employee.uid,
-        employee_name: employee.name,
-        attendance_status: values.attendance_status,
-        notes: values.notes || null,
-      });
-      message.success('Employee assigned successfully.');
-      setAssignSlot(null);
-      await refreshRecord();
-    } catch (error) {
-      message.error(`Assignment failed: ${error.message}`);
-    } finally {
-      setSaving(false);
-    }
+    assignMutation.mutate(
+      {
+        fulfillmentId: record.uid,
+        payload: {
+          slot_id: assignSlot.slot_id,
+          employee_id: employee.uid,
+          employee_name: employee.name,
+          attendance_status: values.attendance_status,
+          notes: values.notes || null,
+        },
+      },
+      {
+        onSuccess: () => {
+          setAssignSlot(null);
+          refreshRecord();
+        },
+      }
+    );
   };
 
   const handleSwap = async (values) => {
@@ -113,22 +113,23 @@ const SlotManagement = () => {
       return message.error('Selected replacement designation does not match slot.');
     }
 
-    setSaving(true);
-    try {
-      await dailyFulfillmentService.swapRoleSlotEmployee(record.uid, {
-        slot_id: swapSlot.slot_id,
-        new_employee_id: employee.uid,
-        new_employee_name: employee.name,
-        reason: values.reason === 'Other' ? values.custom_reason : values.reason,
-      });
-      message.success('Employee swapped successfully.');
-      setSwapSlot(null);
-      await refreshRecord();
-    } catch (error) {
-      message.error(`Swap failed: ${error.message}`);
-    } finally {
-      setSaving(false);
-    }
+    swapMutation.mutate(
+      {
+        fulfillmentId: record.uid,
+        payload: {
+          slot_id: swapSlot.slot_id,
+          new_employee_id: employee.uid,
+          new_employee_name: employee.name,
+          reason: values.reason === 'Other' ? values.custom_reason : values.reason,
+        },
+      },
+      {
+        onSuccess: () => {
+          setSwapSlot(null);
+          refreshRecord();
+        },
+      }
+    );
   };
 
   if (!canAccess) {
@@ -210,7 +211,7 @@ const SlotManagement = () => {
         open={Boolean(assignSlot)}
         slot={assignSlot}
         employees={employees}
-        loading={saving}
+        loading={assignMutation.isPending}
         assignedEmployeeIds={assignedEmployeeIds}
         onCancel={() => setAssignSlot(null)}
         onSubmit={handleAssign}
@@ -220,7 +221,7 @@ const SlotManagement = () => {
         open={Boolean(swapSlot)}
         slot={swapSlot}
         employees={employees}
-        loading={saving}
+        loading={swapMutation.isPending}
         assignedEmployeeIds={assignedEmployeeIds}
         onCancel={() => setSwapSlot(null)}
         onSubmit={handleSwap}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { 
@@ -13,6 +13,7 @@ import {
     createPayslips, getManagers
 } from '../services/apiService';
 import { employeeService } from '../services';
+import { useEmployees, useDeleteEmployee, useUpdateEmployee, useUploadEmployeePhoto } from '../hooks/useEmployees';
 import websocketService from '../services/websocketService';
 import { useAuth } from '../context/AuthContext'; 
 
@@ -30,9 +31,7 @@ function EmployeesPage() {
     const { user } = useAuth(); 
     const [form] = Form.useForm();
 
-    const [employees, setEmployees] = useState([]);
     const [managers, setManagers] = useState([]); 
-    const [loading, setLoading] = useState(true);
     
     const [searchText, setSearchText] = useState('');
     const [selectedDesignation, setSelectedDesignation] = useState('all');
@@ -47,39 +46,25 @@ function EmployeesPage() {
 
     const isHighLevelAdmin = user?.role === 'SuperAdmin' || user?.role === 'Admin';
 
-    // --- 1. Load Data Function ---
-    const loadData = useCallback(async () => {
-        if (!user) return;
-        try {
-            setLoading(true);
+    // --- React Query hooks ---
+    const { data: employees = [], isLoading: loading, refetch: refetchEmployees } = useEmployees();
+    const deleteEmployeeMutation = useDeleteEmployee();
+    const updateEmployeeMutation = useUpdateEmployee();
+    const uploadPhotoMutation = useUploadEmployeePhoto();
 
-            // Backend already filters employees by manager_id for Site Manager role
-            const promises = [employeeService.getAll()];
-            if (isHighLevelAdmin) promises.push(getManagers());
+    // --- 1. Load managers for admin users ---
+    React.useEffect(() => {
+        if (!isHighLevelAdmin) return;
+        getManagers()
+            .then((data) => setManagers(data || []))
+            .catch(() => {});
+    }, [isHighLevelAdmin]);
 
-            const results = await Promise.all(promises);
-            const empData = results[0] || [];
-            const adminData = isHighLevelAdmin ? (results[1] || []) : [];
-
-            setEmployees(empData);
-            if (isHighLevelAdmin) {
-                setManagers(adminData);
-            }
-        } catch (e) {
-            console.error("Load Error:", e);
-            message.error("Failed to sync workforce data");
-        } finally {
-            setLoading(false);
-        }
-    }, [user, isHighLevelAdmin]);
-
-    // --- 2. Lifecycle & WebSockets ---
-    useEffect(() => {
-        loadData();
-
+    // --- 2. WebSocket listener ---
+    React.useEffect(() => {
         const handleWsMessage = (data) => {
             if (['employee_update', 'duty_update', 'employee_delete'].includes(data.type)) {
-                loadData();
+                refetchEmployees();
             }
         };
 
@@ -88,7 +73,7 @@ function EmployeesPage() {
         return () => {
             websocketService.unregister();
         };
-    }, [loadData]);
+    }, [refetchEmployees]);
 
     // --- 3. Filtering Logic ---
     const designations = useMemo(() => {
@@ -130,12 +115,8 @@ function EmployeesPage() {
             content: 'Removing this employee will delete their historical records. Proceed?',
             okText: 'Delete',
             okType: 'danger',
-            onOk: async () => {
-                try {
-                    await employeeService.remove(id);
-                    message.success("Employee removed successfully");
-                    loadData();
-                } catch (err) { message.error("Delete failed"); }
+            onOk: () => {
+                deleteEmployeeMutation.mutate(id);
             }
         });
     };
@@ -169,22 +150,18 @@ function EmployeesPage() {
         try {
             const vals = await form.validateFields();
             const empId = editingEmployee.id || editingEmployee.uid;
-            await employeeService.update(empId, vals);
+            await updateEmployeeMutation.mutateAsync({ id: empId, data: vals });
             if (editPhotoFile) {
                 try {
-                    await employeeService.uploadPhoto(empId, editPhotoFile);
-                    message.success("Employee details and photo updated");
+                    await uploadPhotoMutation.mutateAsync({ id: empId, file: editPhotoFile });
                 } catch (e) {
                     console.warn('Photo upload failed:', e);
                     message.warning("Employee details updated, but photo upload failed");
                 }
-            } else {
-                message.success("Employee details updated");
             }
             setIsEditModalOpen(false);
             setEditPhotoFile(null);
             setEditPhotoPreview(null);
-            loadData();
         } catch (err) {
             console.error("Update failed:", err);
             message.error("Failed to update employee details. Please try again.");
