@@ -152,12 +152,10 @@ function EmployeesPage() {
             const empId = editingEmployee.id || editingEmployee.uid;
             await updateEmployeeMutation.mutateAsync({ id: empId, data: vals });
             if (editPhotoFile) {
-                try {
-                    await uploadPhotoMutation.mutateAsync({ id: empId, file: editPhotoFile });
-                } catch (e) {
+                // Photo upload failure is handled by the hook's onError toast
+                await uploadPhotoMutation.mutateAsync({ id: empId, file: editPhotoFile }).catch((e) => {
                     console.warn('Photo upload failed:', e);
-                    message.warning("Employee details updated, but photo upload failed");
-                }
+                });
             }
             setIsEditModalOpen(false);
             setEditPhotoFile(null);

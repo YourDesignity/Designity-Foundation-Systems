@@ -56,7 +56,7 @@ const DailyFulfillmentRecord = () => {
   const loading = loadingContracts;
   const employees = employeeList;
 
-  // Initialise rows when contract details change
+  // Initialize rows when contract details change
   useEffect(() => {
     if (!contractDetails) {
       setRows([]);
