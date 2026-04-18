@@ -1,17 +1,12 @@
-// ⚠️ DEPRECATED: Use domain-based services from src/services/ instead
-// This file is kept for backward compatibility during Phase 4 migration
+// @deprecated Legacy API service - kept for backward compatibility only.
+// All new code should use domain-based services from src/services/
 
 import { jwtDecode } from 'jwt-decode';
 
 export const API_BASE_URL = 'http://127.0.0.1:8000'; 
 
-const warnDeprecation = (name, replacement = 'domain-based services from src/services/') => {
-    console.warn(`DEPRECATED: ${name} - Use ${replacement} instead`);
-};
-
 // --- CORE API HELPER ---
 export const fetchWithAuth = async (endpoint, options = {}) => {
-    warnDeprecation(`apiService.fetchWithAuth(${endpoint})`);
     const token = localStorage.getItem('access_token') || localStorage.getItem('accessToken');
     const publicAuthEndpoints = ['/token', '/auth/login'];
     const isPublicAuthEndpoint = publicAuthEndpoints.some((path) => endpoint === path || endpoint.startsWith(`${path}?`));
@@ -84,7 +79,6 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
 
 // --- 1. AUTHENTICATION ---
 export const login = async (email, password) => {
-    warnDeprecation('apiService.login()', 'authService.login()');
     const formData = new FormData();
     formData.append('username', email);
     formData.append('password', password);
@@ -99,7 +93,6 @@ export const login = async (email, password) => {
 };
 
 export const logout = () => {
-    warnDeprecation('apiService.logout()', 'authService.logout()');
     localStorage.clear();
     window.location.href = '/login'; 
 };

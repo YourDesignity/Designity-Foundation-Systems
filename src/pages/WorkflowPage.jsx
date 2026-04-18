@@ -8,7 +8,7 @@ import {
   TeamOutlined, ApartmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithAuth } from '../services/apiService';
+import { projectService, contractService, siteService } from '../services';
 
 const STATUS_COLORS = {
   Active: 'green',
@@ -42,9 +42,9 @@ const WorkflowPage = () => {
     setLoading(true);
     try {
       const [projectsData, contractsData, sitesData] = await Promise.all([
-        fetchWithAuth('/projects/'),
-        fetchWithAuth('/workflow/contracts/'),
-        fetchWithAuth('/workflow/sites/'),
+        projectService.getAll(),
+        contractService.getWorkflowContracts(),
+        siteService.getWorkflowSites(),
       ]);
       setProjects(Array.isArray(projectsData) ? projectsData : []);
       setContracts(Array.isArray(contractsData) ? contractsData : []);

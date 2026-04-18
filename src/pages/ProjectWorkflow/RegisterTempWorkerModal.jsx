@@ -69,7 +69,7 @@ const RegisterTempWorkerModal = ({ visible, onCancel, onSuccess }) => {
             okText="Register Worker"
             width={560}
             confirmLoading={loading}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form form={form} layout="vertical" initialValues={{ rate_type: 'Daily' }}>
                 <Form.Item

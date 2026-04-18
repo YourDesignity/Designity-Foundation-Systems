@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  Card, List, Avatar, Button, Input, Tag, Typography, Space, 
+  Card, Avatar, Button, Input, Tag, Typography, Space, 
   message, theme, Row, Col, Spin, Badge, Empty, Modal, Checkbox, Divider, Select
 } from 'antd';
 import { 
@@ -343,10 +343,10 @@ const MessagePage = () => {
               />
             )}
 
-            <List
-              dataSource={conversations}
-              renderItem={conv => (
-                <List.Item
+            <div>
+              {conversations.map(conv => (
+                <div
+                  key={conv.id}
                   onClick={() => setSelectedConversation(conv)}
                   style={{
                     cursor: 'pointer',
@@ -355,7 +355,10 @@ const MessagePage = () => {
                     padding: 12,
                     marginBottom: 8,
                     border: selectedConversation?.id === conv.id ? '2px solid #1890ff' : '1px solid #f0f0f0',
-                    transition: 'all 0.3s'
+                    transition: 'all 0.3s',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 12,
                   }}
                   onMouseEnter={(e) => {
                     if (selectedConversation?.id !== conv.id) {
@@ -368,47 +371,42 @@ const MessagePage = () => {
                     }
                   }}
                 >
-                  <List.Item.Meta
-                    avatar={
-                      <Badge count={conv.unread_count} offset={[-5, 5]}>
-                        <Avatar 
-                          icon={getConversationIcon(conv.type)} 
-                          style={{ 
-                            backgroundColor: selectedConversation?.id === conv.id ? '#1890ff' : '#f0f0f0',
-                            color: selectedConversation?.id === conv.id ? 'white' : '#666'
-                          }}
-                          size={40}
-                        />
-                      </Badge>
-                    }
-                    title={
-                      <Text strong style={{ fontSize: 14 }}>
-                        {conv.title}
+                  <Badge count={conv.unread_count} offset={[-5, 5]}>
+                    <Avatar
+                      icon={getConversationIcon(conv.type)}
+                      style={{
+                        backgroundColor: selectedConversation?.id === conv.id ? '#1890ff' : '#f0f0f0',
+                        color: selectedConversation?.id === conv.id ? 'white' : '#666',
+                        flexShrink: 0,
+                      }}
+                      size={40}
+                    />
+                  </Badge>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Text strong style={{ fontSize: 14 }}>
+                      {conv.title}
+                    </Text>
+                    <div>
+                      <Text
+                        type="secondary"
+                        ellipsis
+                        style={{ fontSize: 12, display: 'block' }}
+                      >
+                        {conv.last_message_preview || "No messages yet"}
                       </Text>
-                    }
-                    description={
-                      <div>
-                        <Text 
-                          type="secondary" 
-                          ellipsis 
-                          style={{ fontSize: 12, display: 'block' }}
-                        >
-                          {conv.last_message_preview || "No messages yet"}
+                      <Space style={{ marginTop: 4 }}>
+                        <Text type="secondary" style={{ fontSize: 11 }}>
+                          {formatTimestamp(conv.last_message_at)}
                         </Text>
-                        <Space style={{ marginTop: 4 }}>
-                          <Text type="secondary" style={{ fontSize: 11 }}>
-                            {formatTimestamp(conv.last_message_at)}
-                          </Text>
-                          <Tag color="blue" style={{ fontSize: 10, padding: '0 4px', margin: 0 }}>
-                            {conv.participant_count} {conv.participant_count === 1 ? 'person' : 'people'}
-                          </Tag>
-                        </Space>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+                        <Tag color="blue" style={{ fontSize: 10, padding: '0 4px', margin: 0 }}>
+                          {conv.participant_count} {conv.participant_count === 1 ? 'person' : 'people'}
+                        </Tag>
+                      </Space>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </Card>
         </Col>
 

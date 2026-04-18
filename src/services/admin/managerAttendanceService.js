@@ -14,18 +14,25 @@ class ManagerAttendanceService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getConfig(managerId) {
-    // TODO: Implement in Phase 4B
     return this.get(`/config/${managerId}`);
   }
 
   /**
-   * Get attendance overview.
+   * Get attendance overview for all managers on a date.
    * @param {string} date
    * @returns {Promise<Array>}
    */
   async getAll(date) {
-    // TODO: Implement in Phase 4B
     return this.get('/all', date ? { date } : {});
+  }
+
+  /**
+   * Override manager attendance.
+   * @param {Object} payload
+   * @returns {Promise<Object>}
+   */
+  async override(payload) {
+    return this.post('/override', payload);
   }
 }
 

@@ -1,4 +1,5 @@
 import BaseService from '../base/BaseService';
+import apiClient from '../base/apiClient';
 
 /**
  * Contract service.
@@ -13,7 +14,6 @@ class ContractService extends BaseService {
    * @returns {Promise<Array>}
    */
   async getAll() {
-    // TODO: Implement in Phase 4B
     return this.get('/');
   }
 
@@ -23,8 +23,16 @@ class ContractService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getById(id) {
-    // TODO: Implement in Phase 4B
     return this.get(`/${id}`);
+  }
+
+  /**
+   * Get workflow contracts (optionally filtered by project).
+   * @param {number|string} [projectId]
+   * @returns {Promise<Array>}
+   */
+  async getWorkflowContracts(projectId) {
+    return apiClient.get(projectId ? `/workflow/contracts/?project_id=${projectId}` : '/workflow/contracts/');
   }
 }
 

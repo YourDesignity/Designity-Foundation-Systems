@@ -11,6 +11,9 @@ export { default as projectService } from './projects/projectService';
 export { default as contractService } from './projects/contractService';
 export { default as siteService } from './projects/siteService';
 
+export { default as workforceService } from './workforce/workforceService';
+export { default as dutyListService } from './workforce/dutyListService';
+
 export { default as assignmentService } from './assignments/assignmentService';
 export { default as tempWorkerService } from './assignments/tempWorkerService';
 
@@ -27,6 +30,10 @@ export { default as purchaseOrderService } from './materials/purchaseOrderServic
 
 export { default as invoiceService } from './finance/invoiceService';
 export { default as financeService } from './finance/financeService';
+
+export { default as inventoryService } from './inventory/inventoryService';
+
+export { default as settingsService } from './settings/settingsService';
 
 export { default as messagingService } from './messaging/messagingService';
 

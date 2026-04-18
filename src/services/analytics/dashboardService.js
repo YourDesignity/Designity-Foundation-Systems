@@ -33,9 +33,9 @@ class DashboardService extends BaseService {
     return this.get('/cost-breakdown');
   }
 
-  /** Get project status distribution. */
-  async getProjectMetrics() {
-    return this.get('/project-metrics');
+  /** Get workflow summary for the workflow overview page. */
+  async getWorkflowSummary() {
+    return this.get('/workflow-summary');
   }
 }
 

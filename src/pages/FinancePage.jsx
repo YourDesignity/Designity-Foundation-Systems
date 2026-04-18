@@ -11,7 +11,7 @@ import {
 import { Line, Column, Pie, Bar, Gauge, Waterfall } from '@ant-design/charts';
 import ExcelJS from 'exceljs';
 import '../styles/FinancePage.css';
-import { getAdvancedFinancialSummary } from '../services/apiService';
+import { financeService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { PERMISSIONS } from '../constants/permissions';
@@ -116,7 +116,7 @@ const FinancePage = () => {
         setLoading(true);
         setError(null);
         try {
-            const result = await getAdvancedFinancialSummary();
+            const result = await financeService.getAdvancedSummary();
             setData(result);
         } catch (e) {
             setError(e.message || 'Failed to load financial data.');
@@ -143,7 +143,7 @@ const FinancePage = () => {
     if (loading) {
         return (
             <div className="finance-loading">
-                <Spin size="large" tip="Loading Confidential Financial Data..." />
+                <Spin size="large" description="Loading Confidential Financial Data..." />
             </div>
         );
     }
@@ -153,7 +153,7 @@ const FinancePage = () => {
             <div className="finance-container">
                 <Alert
                     type="error"
-                    message="Failed to Load Financial Data"
+                    title="Failed to Load Financial Data"
                     description={error}
                     action={<Button onClick={loadData} icon={<ReloadOutlined />}>Retry</Button>}
                 />

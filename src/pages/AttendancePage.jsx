@@ -3,7 +3,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { getEmployees, getAttendanceByDate, updateAttendance, getAttendanceByMonth, downloadAttendancePDF } from '../services/apiService';
+import { employeeService, attendanceService } from '../services';
 import { FiChevronLeft, FiChevronRight, FiXCircle, FiShieldOff, FiMoon, FiSun, FiCalendar, FiClock, FiDownload, FiFileText } from 'react-icons/fi';
 import '../styles/AttendancePage.css';
 
@@ -40,7 +40,7 @@ const AttendancePage = () => {
         const load = async () => {
             try {
                 setIsLoading(true);
-                const [empData, attendData] = await Promise.all([getEmployees(), getAttendanceByDate(date)]);
+                const [empData, attendData] = await Promise.all([employeeService.getAll(), attendanceService.getByDate(date)]);
                 
                 // Keep employees with valid IDs
                 const mappedEmps = empData.map(e => ({ ...e, id: e.id || e.uid }));
@@ -82,7 +82,7 @@ const AttendancePage = () => {
             overtime_hours: s === 'Present' ? (parseInt(overtime[id]) || 0) : 0
         }));
         try {
-            await updateAttendance({ records });
+            await attendanceService.updateBatch({ records });
             setMessage({ type: 'success', text: "Attendance Synced Successfully!" });
             setIsDirty(false);
         } catch (e) { setMessage({ type: 'error', text: "Sync Failed" }); }
@@ -93,7 +93,7 @@ const AttendancePage = () => {
     const handleDailyPdfExport = async () => {
         setMessage({ type: 'success', text: "Generating Professional Daily PDF..." });
         try {
-            await downloadAttendancePDF(date);
+        await attendanceService.downloadPDF(date);
             setMessage({ type: 'success', text: "Daily PDF Downloaded!" });
         } catch (err) {
             setMessage({ type: 'error', text: "PDF Generation Failed" });
@@ -109,7 +109,7 @@ const AttendancePage = () => {
             const d = new Date(date);
             const year = d.getFullYear();
             const month = d.getMonth() + 1;
-            const monthlyData = await getAttendanceByMonth(year, month);
+            const monthlyData = await attendanceService.getByMonth(year, month);
             const attendanceMap = monthlyData.reduce((acc, r) => {
                 const id = r.employee_uid || r.employee_id;
                 const dayNum = new Date(r.date).getDate();

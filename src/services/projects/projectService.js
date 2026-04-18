@@ -14,7 +14,6 @@ class ProjectService extends BaseService {
    * @returns {Promise<Array>}
    */
   async getAll(filters = {}) {
-    // TODO: Implement in Phase 4B
     return this.get('/', filters);
   }
 
@@ -24,7 +23,6 @@ class ProjectService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getById(id) {
-    // TODO: Implement in Phase 4B
     return this.get(`/${id}`);
   }
 }

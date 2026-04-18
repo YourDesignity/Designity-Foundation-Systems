@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Form, InputNumber, Switch, Button, message, Row, Col, Typography, Alert, Divider, Statistic, Input } from 'antd';
 import { SaveOutlined, SettingOutlined, DollarOutlined, ClockCircleOutlined, WarningOutlined, FolderOutlined } from '@ant-design/icons';
-import { getCompanySettings, updateCompanySettings } from '../services/apiService';
+import { settingsService } from '../services';
 
 const { Title, Text } = Typography;
 
@@ -15,7 +15,7 @@ function CompanySettingsPage() {
     const fetchSettings = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getCompanySettings();
+            const response = await settingsService.getAll();
             setSettings(response);
         } catch (err) {
             message.error('Failed to load settings: ' + (err.message || 'Unknown error'));
@@ -38,7 +38,7 @@ function CompanySettingsPage() {
         try {
             const values = await form.validateFields();
             setSaving(true);
-            await updateCompanySettings(values);
+            await settingsService.update(values);
             message.success('Company settings updated successfully');
             fetchSettings();
         } catch (err) {

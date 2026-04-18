@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Row, Col, Card, Table, Tag, Button, Typography, Space, Modal, Form, 
-  Input, Select, DatePicker, Tabs, message, Badge, InputNumber, Avatar, Divider, Statistic, List
+  Input, Select, DatePicker, Tabs, message, Badge, InputNumber, Avatar, Divider, Statistic
 } from 'antd';
 import { 
   CarOutlined, ToolOutlined, HistoryOutlined, PlusOutlined, 
@@ -33,11 +33,7 @@ const uiStyles = {
   }
 };
 
-import { 
-  getVehicles, addVehicle, getTrips, startTrip, endTrip, 
-  getMaintenanceLogs, addMaintenanceLog, getFuelLogs, addFuelLog,
-  getExpenses, addExpense 
-} from '../services/apiService';
+import { vehicleService } from '../services';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -75,7 +71,7 @@ function VehicleManagementPage() {
       setLoading(true);
       try {
         const [v, t, m, f, e] = await Promise.all([
-          getVehicles(), getTrips(), getMaintenanceLogs(), getFuelLogs(), getExpenses()
+          vehicleService.getAll(), vehicleService.getTrips(), vehicleService.getMaintenance(), vehicleService.getFuelRecords(), vehicleService.getExpenses()
         ]);
         setVehicles(Array.isArray(v) ? v : []);
         setTrips(Array.isArray(t) ? t : []);
@@ -102,7 +98,7 @@ function VehicleManagementPage() {
   const handleAddVehicle = async () => {
     try {
         const values = await vehicleForm.validateFields();
-        await addVehicle({
+        await vehicleService.create({
             ...values,
             registration_expiry: values.registration_expiry?.format('YYYY-MM-DD'),
             insurance_expiry: values.insurance_expiry?.format('YYYY-MM-DD'),
@@ -114,7 +110,7 @@ function VehicleManagementPage() {
   const handleStartTrip = async () => { 
     try { 
         const values = await tripForm.validateFields();
-        await startTrip(values); 
+        await vehicleService.startTrip(values); 
         message.success('Trip sequence started'); setModals({...modals, tripStart:false}); tripForm.resetFields(); refreshData(); 
     } catch(e){ message.error('Ensure all driver details are filled'); } 
   };
@@ -122,7 +118,7 @@ function VehicleManagementPage() {
   const handleEndTrip = async () => { 
     try { 
         const v = await endTripForm.validateFields();
-        await endTrip(selectedTripId, v.end_mileage, v.end_condition); 
+        await vehicleService.endTrip(selectedTripId, v.end_mileage, v.end_condition); 
         message.success('Trip completed & logged'); setModals({...modals, tripEnd:false}); endTripForm.resetFields(); refreshData(); 
     } catch(e){ message.error('Trip closure failed'); } 
   };
@@ -130,7 +126,7 @@ function VehicleManagementPage() {
   const handleAddFuel = async () => {
     try {
         const v = await fuelForm.validateFields();
-        await addFuelLog({...v, date: v.date.format('YYYY-MM-DD HH:mm')});
+        await vehicleService.addFuelLog({...v, date: v.date.format('YYYY-MM-DD HH:mm')});
         message.success('Fuel entry saved'); setModals({...modals, fuel:false}); fuelForm.resetFields(); refreshData();
     } catch(e){ message.error('Fuel log failed'); }
   };
@@ -138,7 +134,7 @@ function VehicleManagementPage() {
   const handleAddMaintenance = async () => {
     try {
         const v = await maintForm.validateFields();
-        await addMaintenanceLog({...v, service_date: v.service_date.format('YYYY-MM-DD')});
+        await vehicleService.addMaintenance({...v, service_date: v.service_date.format('YYYY-MM-DD')});
         message.success('Maintenance record added'); setModals({...modals, maintenance:false}); maintForm.resetFields(); refreshData();
     } catch(e){ message.error('Maintenance log failed'); }
   };
@@ -146,7 +142,7 @@ function VehicleManagementPage() {
   const handleAddExpense = async () => {
     try {
         const v = await expenseForm.validateFields();
-        await addExpense({...v, date: dayjs().format('YYYY-MM-DD HH:mm')});
+        await vehicleService.addExpense({...v, date: dayjs().format('YYYY-MM-DD HH:mm')});
         message.success('Digital expense logged successfully'); setModals({...modals, expense:false}); expenseForm.resetFields(); refreshData();
     } catch(e){ message.error('Expense tracking failed'); }
   };
@@ -275,15 +271,16 @@ function VehicleManagementPage() {
           </Card>
 
           <Card style={{ ...uiStyles.actionCard, marginTop: '24px' }} title={<Text strong><WarningOutlined style={{color:'#faad14'}}/> System Alerts</Text>}>
-              <List
-                size="small"
-                dataSource={vehicles.filter(v => v.current_mileage > 10000)} // Example alert logic
-                renderItem={item => (
-                    <List.Item>
-                        <Badge status="warning" text={`${item.plate} is due for check-up`} />
-                    </List.Item>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {vehicles.filter(v => v.current_mileage > 10000).map(item => (
+                  <div key={item.uid} style={{ padding: '4px 0' }}>
+                    <Badge status="warning" text={`${item.plate} is due for check-up`} />
+                  </div>
+                ))}
+                {vehicles.filter(v => v.current_mileage > 10000).length === 0 && (
+                  <div style={{ color: '#999', fontSize: 13 }}>No alerts</div>
                 )}
-              />
+              </div>
           </Card>
         </Col>
       </Row>

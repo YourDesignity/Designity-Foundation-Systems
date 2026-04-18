@@ -10,7 +10,7 @@ import {
   SearchOutlined, ApartmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithAuth } from '../../services/apiService';
+import { dashboardService } from '../../services';
 import './WorkflowOverview.css';
 
 const { Title, Text } = Typography;
@@ -32,7 +32,7 @@ const WorkflowOverview = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchWithAuth('/dashboard/workflow-summary');
+      const result = await dashboardService.getWorkflowSummary();
       setData(result);
     } catch (error) {
       console.error('Error fetching workflow summary:', error);

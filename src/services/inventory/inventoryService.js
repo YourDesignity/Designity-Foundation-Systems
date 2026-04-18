@@ -1,15 +1,15 @@
 import BaseService from '../base/BaseService';
 
 /**
- * Admin user management service.
+ * Inventory service.
  */
-class AdminService extends BaseService {
+class InventoryService extends BaseService {
   constructor() {
-    super('/admins');
+    super('/inventory');
   }
 
   /**
-   * Get all admins.
+   * Get all inventory items.
    * @returns {Promise<Array>}
    */
   async getAll() {
@@ -17,16 +17,7 @@ class AdminService extends BaseService {
   }
 
   /**
-   * Get admin by ID.
-   * @param {number|string} id
-   * @returns {Promise<Object>}
-   */
-  async getById(id) {
-    return this.get(`/${id}`);
-  }
-
-  /**
-   * Create a new admin.
+   * Create a new inventory item.
    * @param {Object} data
    * @returns {Promise<Object>}
    */
@@ -35,7 +26,7 @@ class AdminService extends BaseService {
   }
 
   /**
-   * Delete an admin by ID.
+   * Delete an inventory item by ID.
    * @param {number|string} id
    * @returns {Promise<void>}
    */
@@ -44,4 +35,4 @@ class AdminService extends BaseService {
   }
 }
 
-export default new AdminService();
+export default new InventoryService();

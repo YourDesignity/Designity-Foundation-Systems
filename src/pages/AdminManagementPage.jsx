@@ -8,7 +8,7 @@ import {
   MailOutlined, IdcardOutlined, LockOutlined, EditOutlined, DeleteOutlined
 } from '@ant-design/icons';
 
-import { getAdmins, createAdmin, deleteAdmin } from '../services/apiService';
+import { adminService } from '../services';
 import EditAdminModal from '../components/Admin/EditAdminModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,7 +31,7 @@ function AdminManagementPage() {
   const fetchAdmins = async () => {
     setLoading(true);
     try {
-      const data = await getAdmins();
+      const data = await adminService.getAll();
       
       // Role-based filtering: SuperAdmin sees everyone, Regular Admin hides SuperAdmins
       const visibleAdmins = Array.isArray(data)
@@ -69,7 +69,7 @@ function AdminManagementPage() {
         role_id: values.role_id
       };
 
-      await createAdmin(newAdminData);
+      await adminService.create(newAdminData);
       
       message.success("Admin created successfully!");
       setIsModalOpen(false);
@@ -108,7 +108,7 @@ function AdminManagementPage() {
       return;
     }
     try {
-      await deleteAdmin(adminId);
+      await adminService.deleteById(adminId);
       message.success('Admin deleted successfully');
       fetchAdmins();
     } catch (err) {
