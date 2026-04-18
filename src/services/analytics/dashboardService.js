@@ -8,22 +8,34 @@ class DashboardService extends BaseService {
     super('/dashboard');
   }
 
-  /**
-   * Get dashboard metrics.
-   * @returns {Promise<Object>}
-   */
+  /** Get dashboard metrics (headcount, financials, alerts). */
   async getMetrics() {
-    // TODO: Implement in Phase 4B
     return this.get('/metrics');
   }
 
-  /**
-   * Get dashboard trends.
-   * @returns {Promise<Object>}
-   */
+  /** Get dashboard trends. */
   async getTrends() {
-    // TODO: Implement in Phase 4B
     return this.get('/trends');
+  }
+
+  /** Get attendance trend for the last 30 days. */
+  async getAttendanceTrend() {
+    return this.get('/attendance-trend');
+  }
+
+  /** Get monthly revenue trend for the last 12 months. */
+  async getRevenueTrend() {
+    return this.get('/revenue-trend');
+  }
+
+  /** Get cost breakdown by category (labour, materials, vehicles). */
+  async getCostBreakdown() {
+    return this.get('/cost-breakdown');
+  }
+
+  /** Get project status distribution. */
+  async getProjectMetrics() {
+    return this.get('/project-metrics');
   }
 }
 

@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 // Project Workflow Overview Dashboard
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
   Row, Col, Card, Statistic, Typography, Button, Space,
   Spin, Tag, Alert, Progress,
@@ -12,7 +12,11 @@ import {
   ClockCircleOutlined, AlertOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithAuth } from '../services/apiService.jsx';
+import { useDashboardMetrics, useAttendanceTrend, useRevenueTrend, useCostBreakdown, useProjectMetrics } from '../hooks/useDashboard';
+import AttendanceTrendChart from '../components/Dashboard/AttendanceTrendChart';
+import RevenueTrendChart from '../components/Dashboard/RevenueTrendChart';
+import CostBreakdownChart from '../components/Dashboard/CostBreakdownChart';
+import ProjectStatusChart from '../components/Dashboard/ProjectStatusChart';
 
 const { Title, Text } = Typography;
 
@@ -20,31 +24,17 @@ const { Title, Text } = Typography;
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchWithAuth('/dashboard/summary');
-      setData(result);
-    } catch (err) {
-      setError(err.message || 'Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const { data, isLoading: loading, error, refetch: loadData } = useDashboardMetrics();
+  const { data: attendanceTrend = [], isLoading: loadingAttendance } = useAttendanceTrend();
+  const { data: revenueTrend = [], isLoading: loadingRevenue } = useRevenueTrend();
+  const { data: costBreakdown = [], isLoading: loadingCost } = useCostBreakdown();
+  const { data: projectMetrics = [], isLoading: loadingProjects } = useProjectMetrics();
 
   if (loading) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <Spin size="large" description="Loading dashboard..." />
+        <Spin size="large" />
       </div>
     );
   }
@@ -54,7 +44,7 @@ const Dashboard = () => {
       <Alert
         type="error"
         message="Dashboard Error"
-        description={error}
+        description={error.message || 'Failed to load dashboard data'}
         action={<Button onClick={loadData} icon={<ReloadOutlined />}>Retry</Button>}
         style={{ margin: 24 }}
       />
@@ -313,6 +303,49 @@ const Dashboard = () => {
           </Col>
         </Row>
       )}
+
+      {/* ── Analytics Charts ─────────────────────────────────────────────── */}
+      <Row gutter={[16, 16]} style={{ marginTop: 16, marginBottom: 16 }}>
+        <Col xs={24} lg={12}>
+          <Card
+            title="📈 Attendance Trend (Last 30 Days)"
+            size="small"
+            style={{ borderRadius: 10 }}
+          >
+            <AttendanceTrendChart data={attendanceTrend} loading={loadingAttendance} />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card
+            title="💰 Monthly Revenue"
+            size="small"
+            style={{ borderRadius: 10 }}
+          >
+            <RevenueTrendChart data={revenueTrend} loading={loadingRevenue} />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={12}>
+          <Card
+            title="🧾 Cost Breakdown"
+            size="small"
+            style={{ borderRadius: 10 }}
+          >
+            <CostBreakdownChart data={costBreakdown} loading={loadingCost} />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card
+            title="🏗️ Project Status"
+            size="small"
+            style={{ borderRadius: 10 }}
+          >
+            <ProjectStatusChart data={projectMetrics} loading={loadingProjects} />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };
