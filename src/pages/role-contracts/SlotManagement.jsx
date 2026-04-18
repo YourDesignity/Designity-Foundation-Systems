@@ -13,7 +13,6 @@ import {
   Space,
   Tag,
   Typography,
-  message,
   Result,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -23,6 +22,7 @@ import { useRoleContracts, useAssignEmployeeToSlot, useSwapEmployeeInSlot } from
 import { dailyFulfillmentService } from '../../services';
 import SlotAssignmentModal from '../../components/role-contracts/SlotAssignmentModal';
 import EmployeeSwapModal from '../../components/role-contracts/EmployeeSwapModal';
+import { toast } from '../../utils/toast';
 
 const { Title, Text } = Typography;
 
@@ -50,14 +50,14 @@ const SlotManagement = () => {
   }, [canAccess, contracts, contractId]);
 
   const loadRecord = async () => {
-    if (!contractId) return message.warning('Select a contract first.');
+    if (!contractId) return toast.warning('Select a contract first.');
     setLoading(true);
     try {
       const response = await dailyFulfillmentService.getDailyFulfillmentRecord(contractId, date.format('YYYY-MM-DD'));
       setRecord(response);
     } catch (error) {
       setRecord(null);
-      message.error(`Failed to load fulfillment record: ${error.message}`);
+      toast.error(`Failed to load fulfillment record: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ const SlotManagement = () => {
       const updated = await dailyFulfillmentService.getDailyFulfillmentRecord(record.contract_id, dayjs(record.date).format('YYYY-MM-DD'));
       setRecord(updated);
     } catch (error) {
-      message.error(`Refresh failed: ${error.message}`);
+      toast.error(`Refresh failed: ${error.message}`);
     }
   };
 
@@ -83,7 +83,7 @@ const SlotManagement = () => {
     if (!record?.uid || !assignSlot) return;
     const employee = employees.find((emp) => emp.uid === values.employee_id);
     if (!employee || employee.designation !== assignSlot.designation) {
-      return message.error('Selected employee designation does not match slot designation.');
+      return toast.error('Selected employee designation does not match slot designation.');
     }
 
     assignMutation.mutate(
@@ -110,7 +110,7 @@ const SlotManagement = () => {
     if (!record?.uid || !swapSlot) return;
     const employee = employees.find((emp) => emp.uid === values.new_employee_id);
     if (!employee || employee.designation !== swapSlot.designation) {
-      return message.error('Selected replacement designation does not match slot.');
+      return toast.error('Selected replacement designation does not match slot.');
     }
 
     swapMutation.mutate(

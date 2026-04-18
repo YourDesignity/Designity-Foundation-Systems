@@ -17,7 +17,6 @@ import {
   Table,
   Tag,
   Typography,
-  message,
   Result,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -25,6 +24,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useRoleContracts, useRoleContract, useRecordDailyFulfillment } from '../../hooks/useRoleContracts';
+import { toast } from '../../utils/toast';
 
 const { Title, Text } = Typography;
 const attendanceOptions = ['Present', 'Absent', 'Half-Day', 'Leave'];
@@ -118,11 +118,11 @@ const DailyFulfillmentRecord = () => {
 
   const submit = async () => {
     if (!selectedContractId || !contractDetails) {
-      message.warning('Please select a contract first.');
+      toast.warning('Please select a contract first.');
       return;
     }
     if (validationErrors.length) {
-      message.error('Please fix validation issues before submission.');
+      toast.error('Please fix validation issues before submission.');
       return;
     }
 
@@ -149,11 +149,7 @@ const DailyFulfillmentRecord = () => {
       }),
     };
 
-    recordDailyFulfillmentMutation.mutate(payload, {
-      onSuccess: (response) => {
-        message.success(`Fulfillment recorded (UID: ${response?.uid || response?.fulfillment_uid || 'created'})`);
-      },
-    });
+    recordDailyFulfillmentMutation.mutate(payload);
   };
 
   const columns = [

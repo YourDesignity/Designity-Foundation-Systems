@@ -14,7 +14,6 @@ import {
   Spin,
   Statistic,
   Typography,
-  message,
   Result,
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
