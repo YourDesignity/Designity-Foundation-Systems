@@ -184,17 +184,14 @@ const SiteManagementPage = () => {
 
   return (
     <div style={{ padding: 24, background: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>
-          <Link to="/project-workflow">Projects</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link to={`/project-workflow/${projectId}/contracts`}>
-            {project?.project_code || `Project ${projectId}`}
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Sites</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[
+          { title: <Link to="/project-workflow">Projects</Link> },
+          { title: <Link to={`/project-workflow/${projectId}/contracts`}>{project?.project_code || `Project ${projectId}`}</Link> },
+          { title: 'Sites' },
+        ]}
+      />
 
       <div
         style={{

@@ -255,7 +255,7 @@ const SiteDetailsPage = () => {
                 <Statistic
                   title="Active Temp Workers"
                   value={tempWorkers.filter((w) => w.status === 'Active').length}
-                  valueStyle={{ color: '#fa8c16' }}
+                  styles={{ content: { color: '#fa8c16' }}}
                 />
               </Card>
             </Col>
@@ -264,7 +264,7 @@ const SiteDetailsPage = () => {
                 <Statistic
                   title="Total Cost (KD)"
                   value={Number(totalTempCost).toLocaleString()}
-                  valueStyle={{ color: '#f5222d' }}
+                  styles={{ content: { color: '#f5222d' }}}
                 />
               </Card>
             </Col>
@@ -342,29 +342,16 @@ const SiteDetailsPage = () => {
   return (
     <div className="site-details-page">
       {/* Breadcrumb */}
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>
-          <Link to="/dashboard">Dashboard</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link to="/project-workflow">Projects</Link>
-        </Breadcrumb.Item>
-        {site.project_id && (
-          <Breadcrumb.Item>
-            <Link to={`/project-workflow/${site.project_id}/details`}>
-              {site.project_name || `Project ${site.project_id}`}
-            </Link>
-          </Breadcrumb.Item>
-        )}
-        {site.contract_id && (
-          <Breadcrumb.Item>
-            <Link to={`/project-workflow/contracts/${site.contract_id}/details`}>
-              {site.contract_code || `Contract ${site.contract_id}`}
-            </Link>
-          </Breadcrumb.Item>
-        )}
-        <Breadcrumb.Item>{site.site_code || site.name}</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[
+          { title: <Link to="/dashboard">Dashboard</Link> },
+          { title: <Link to="/project-workflow">Projects</Link> },
+          ...(site.project_id ? [{ title: <Link to={`/project-workflow/${site.project_id}/details`}>{site.project_name || `Project ${site.project_id}`}</Link> }] : []),
+          ...(site.contract_id ? [{ title: <Link to={`/project-workflow/contracts/${site.contract_id}/details`}>{site.contract_code || `Contract ${site.contract_id}`}</Link> }] : []),
+          { title: site.site_code || site.name },
+        ]}
+      />
 
       {/* Header */}
       <div className="page-header">
@@ -402,7 +389,7 @@ const SiteDetailsPage = () => {
               title="Total Workers"
               value={employees.length + tempWorkers.filter((w) => w.status === 'Active').length}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' }}}
             />
           </Card>
         </Col>
@@ -411,7 +398,7 @@ const SiteDetailsPage = () => {
             <Statistic
               title="Company Employees"
               value={employees.length}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' }}}
             />
           </Card>
         </Col>
@@ -420,7 +407,7 @@ const SiteDetailsPage = () => {
             <Statistic
               title="Temp Workers"
               value={tempWorkers.filter((w) => w.status === 'Active').length}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' }}}
             />
           </Card>
         </Col>
@@ -429,7 +416,7 @@ const SiteDetailsPage = () => {
             <Statistic
               title="Temp Cost (KD)"
               value={Number(totalTempCost).toLocaleString()}
-              valueStyle={{ color: '#f5222d' }}
+              styles={{ content: { color: '#f5222d' }}}
             />
           </Card>
         </Col>
@@ -438,7 +425,7 @@ const SiteDetailsPage = () => {
             <Statistic
               title="Capacity"
               value={`${site.assigned_workers}/${site.required_workers}`}
-              valueStyle={{ color: capacityPercent >= 80 ? '#52c41a' : '#fa8c16' }}
+              styles={{ content: { color: capacityPercent >= 80 ? '#52c41a' : '#fa8c16' }}}
             />
           </Card>
         </Col>
@@ -448,7 +435,7 @@ const SiteDetailsPage = () => {
       <Card className="overview-card" style={{ marginBottom: 24 }}>
         <Row gutter={24}>
           <Col xs={24} md={16}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               {site.project_name && (
                 <div>
                   <Text type="secondary">Project: </Text>

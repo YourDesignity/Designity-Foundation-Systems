@@ -309,12 +309,12 @@ const MaterialsList = () => {
                 </Col>
                 <Col xs={12} sm={6}>
                     <Card size="small">
-                        <Statistic title="Low Stock Alerts" value={lowStockCount} valueStyle={{ color: lowStockCount > 0 ? '#fa8c16' : '#52c41a' }} />
+                        <Statistic title="Low Stock Alerts" value={lowStockCount} styles={{ content: { color: lowStockCount > 0 ? '#fa8c16' : '#52c41a' }}} />
                     </Card>
                 </Col>
                 <Col xs={12} sm={6}>
                     <Card size="small">
-                        <Statistic title="Out of Stock" value={outOfStockCount} valueStyle={{ color: outOfStockCount > 0 ? '#ff4d4f' : '#52c41a' }} />
+                        <Statistic title="Out of Stock" value={outOfStockCount} styles={{ content: { color: outOfStockCount > 0 ? '#ff4d4f' : '#52c41a' }}} />
                     </Card>
                 </Col>
                 <Col xs={12} sm={6}>

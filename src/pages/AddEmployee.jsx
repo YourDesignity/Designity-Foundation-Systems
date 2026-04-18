@@ -175,7 +175,7 @@ const AddEmployeePage = () => {
         return (
             <Alert
                 type={warning === 'EXPIRED' ? 'error' : 'warning'}
-                message={warning}
+                title={warning}
                 showIcon
                 icon={<WarningOutlined />}
                 style={{ marginTop: 8 }}

@@ -78,7 +78,7 @@ function CreateManagerPage() {
 
   return (
     <div className="layout-content">
-      <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+      <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
         <Row align="middle" justify="space-between">
           <Col>
             <Title level={4} style={{ margin: 0 }}>Create New Manager</Title>
@@ -98,7 +98,7 @@ function CreateManagerPage() {
         initialValues={{ date_of_joining: dayjs() }}
       >
         {/* Login Credentials */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>
             <LockOutlined style={{ marginRight: 8 }} />
             Login Credentials
@@ -132,7 +132,7 @@ function CreateManagerPage() {
         </Card>
 
         {/* Profile Information */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>
             <UserOutlined style={{ marginRight: 8 }} />
             Profile Information
@@ -195,7 +195,7 @@ function CreateManagerPage() {
         </Card>
 
         {/* Contact Information */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>
             <PhoneOutlined style={{ marginRight: 8 }} />
             Contact Information <Text type="secondary" style={{ fontSize: 13, fontWeight: 400 }}>(Optional)</Text>
@@ -230,7 +230,7 @@ function CreateManagerPage() {
         </Card>
 
         {/* Banking Details */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>
             <BankOutlined style={{ marginRight: 8 }} />
             Banking Details <Text type="secondary" style={{ fontSize: 13, fontWeight: 400 }}>(Optional)</Text>
@@ -255,7 +255,7 @@ function CreateManagerPage() {
         </Card>
 
         {/* ID Documents */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>
             <IdcardOutlined style={{ marginRight: 8 }} />
             ID Documents <Text type="secondary" style={{ fontSize: 13, fontWeight: 400 }}>(Optional)</Text>
@@ -275,7 +275,7 @@ function CreateManagerPage() {
         </Card>
 
         {/* Site Assignments */}
-        <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+        <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
           <Title level={5} style={{ marginBottom: 20 }}>Site Assignments</Title>
           <Row gutter={[24, 0]}>
             <Col xs={24}>

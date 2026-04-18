@@ -208,17 +208,17 @@ const ProjectDetailsPage = () => {
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Total Contracts" value={contracts.length} valueStyle={{ color: '#1890ff' }} />
+                <Statistic title="Total Contracts" value={contracts.length} styles={{ content: { color: '#1890ff' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Active" value={activeContracts} valueStyle={{ color: '#52c41a' }} />
+                <Statistic title="Active" value={activeContracts} styles={{ content: { color: '#52c41a' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Expiring ≤30 days" value={expiringContracts} valueStyle={{ color: '#fa8c16' }} />
+                <Statistic title="Expiring ≤30 days" value={expiringContracts} styles={{ content: { color: '#fa8c16' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
@@ -226,7 +226,7 @@ const ProjectDetailsPage = () => {
                 <Statistic
                   title="Total Value (KD)"
                   value={Number(totalContractValue).toLocaleString()}
-                  valueStyle={{ color: '#52c41a' }}
+                  styles={{ content: { color: '#52c41a' }}}
                 />
               </Card>
             </Col>
@@ -255,12 +255,12 @@ const ProjectDetailsPage = () => {
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Total Sites" value={sites.length} valueStyle={{ color: '#1890ff' }} />
+                <Statistic title="Total Sites" value={sites.length} styles={{ content: { color: '#1890ff' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Active Sites" value={activeSites} valueStyle={{ color: '#52c41a' }} />
+                <Statistic title="Active Sites" value={activeSites} styles={{ content: { color: '#52c41a' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
@@ -268,7 +268,7 @@ const ProjectDetailsPage = () => {
                 <Statistic
                   title="Total Capacity"
                   value={sites.reduce((sum, s) => sum + (s.required_workers || 0), 0)}
-                  valueStyle={{ color: '#722ed1' }}
+                  styles={{ content: { color: '#722ed1' }}}
                 />
               </Card>
             </Col>
@@ -277,7 +277,7 @@ const ProjectDetailsPage = () => {
                 <Statistic
                   title="Total Assigned"
                   value={sites.reduce((sum, s) => sum + (s.assigned_workers || 0), 0)}
-                  valueStyle={{ color: '#fa8c16' }}
+                  styles={{ content: { color: '#fa8c16' }}}
                 />
               </Card>
             </Col>
@@ -310,7 +310,7 @@ const ProjectDetailsPage = () => {
                     <Statistic
                       title="Company Employees"
                       value={workforce.company_employees}
-                      valueStyle={{ color: '#1890ff' }}
+                      styles={{ content: { color: '#1890ff' }}}
                     />
                   </Card>
                 </Col>
@@ -319,7 +319,7 @@ const ProjectDetailsPage = () => {
                     <Statistic
                       title="Temp Workers"
                       value={workforce.external_workers}
-                      valueStyle={{ color: '#fa8c16' }}
+                      styles={{ content: { color: '#fa8c16' }}}
                     />
                   </Card>
                 </Col>
@@ -328,7 +328,7 @@ const ProjectDetailsPage = () => {
                     <Statistic
                       title="Required"
                       value={workforce.total_required_workers}
-                      valueStyle={{ color: '#722ed1' }}
+                      styles={{ content: { color: '#722ed1' }}}
                     />
                   </Card>
                 </Col>
@@ -337,7 +337,7 @@ const ProjectDetailsPage = () => {
                     <Statistic
                       title="Assigned"
                       value={workforce.total_assigned_workers}
-                      valueStyle={{ color: '#52c41a' }}
+                      styles={{ content: { color: '#52c41a' }}}
                     />
                   </Card>
                 </Col>
@@ -487,16 +487,15 @@ const ProjectDetailsPage = () => {
   return (
     <div className="project-details-page">
       {/* Breadcrumb */}
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>
-          <Link to="/dashboard">Dashboard</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link to="/project-workflow">Projects</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>{project.project_name}</Breadcrumb.Item>
-        <Breadcrumb.Item>Details</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[
+          { title: <Link to="/dashboard">Dashboard</Link> },
+          { title: <Link to="/project-workflow">Projects</Link> },
+          { title: project.project_name },
+          { title: 'Details' },
+        ]}
+      />
 
       {/* Header */}
       <div className="page-header">
@@ -531,7 +530,7 @@ const ProjectDetailsPage = () => {
       <Card className="overview-card" style={{ marginBottom: 24 }}>
         <Row gutter={24}>
           <Col xs={24} md={16}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <div>
                 <Text type="secondary">Client: </Text>
                 <Text strong>{project.client_name}</Text>
@@ -574,7 +573,7 @@ const ProjectDetailsPage = () => {
               value={Number(totalContractValue).toLocaleString()}
               suffix="KD"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' }}}
             />
           </Card>
         </Col>
@@ -584,7 +583,7 @@ const ProjectDetailsPage = () => {
               title="Active Contracts"
               value={activeContracts}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' }}}
             />
           </Card>
         </Col>
@@ -594,7 +593,7 @@ const ProjectDetailsPage = () => {
               title="Total Sites"
               value={sites.length}
               prefix={<EnvironmentOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' }}}
             />
           </Card>
         </Col>
@@ -604,7 +603,7 @@ const ProjectDetailsPage = () => {
               title="Workforce"
               value={(workforce?.company_employees || 0) + (workforce?.external_workers || 0)}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' }}}
             />
           </Card>
         </Col>

@@ -10,7 +10,7 @@ class DashboardService extends BaseService {
 
   /** Get dashboard metrics (headcount, financials, alerts). */
   async getMetrics() {
-    return this.get('/metrics');
+    return this.get('/summary');
   }
 
   /** Get dashboard trends. */

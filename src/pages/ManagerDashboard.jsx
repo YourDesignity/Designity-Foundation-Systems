@@ -124,8 +124,8 @@ function AttendanceQuickWidget() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 16 }}><Spin size="small" /></div>
       ) : (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Alert type={dayAlertType} message={dayLabel} style={{ padding: '4px 12px' }} />
+        <Space orientation="vertical" style={{ width: '100%' }}>
+          <Alert type={dayAlertType} title={dayLabel} style={{ padding: '4px 12px' }} />
           {['morning', 'afternoon', 'evening'].map((seg) => (
             <QuickSegmentStatus key={seg} segment={seg} config={config} attendance={today} />
           ))}

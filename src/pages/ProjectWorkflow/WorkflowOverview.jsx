@@ -14,7 +14,6 @@ import { fetchWithAuth } from '../../services/apiService';
 import './WorkflowOverview.css';
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 
 const STATUS_COLORS = {
   Active: 'green',
@@ -171,7 +170,7 @@ const WorkflowOverview = () => {
               title="Total Projects"
               value={data?.total_projects || 0}
               prefix={<ProjectOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' }}}
             />
             <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
               {data?.active_projects || 0} active · {data?.completed_projects || 0} completed
@@ -184,7 +183,7 @@ const WorkflowOverview = () => {
               title="Total Contracts"
               value={data?.total_contracts || 0}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' }}}
             />
             <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
               {data?.active_contracts || 0} active
@@ -197,7 +196,7 @@ const WorkflowOverview = () => {
               title="Total Sites"
               value={data?.total_sites || 0}
               prefix={<EnvironmentOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' }}}
             />
             <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
               {data?.active_sites || 0} active
@@ -210,7 +209,7 @@ const WorkflowOverview = () => {
               title="Temp Workers"
               value={data?.total_active_temp_workers || 0}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' }}}
             />
           </Card>
         </Col>
@@ -220,7 +219,7 @@ const WorkflowOverview = () => {
               title="Contract Value (KD)"
               value={Number(data?.total_contract_value || 0).toLocaleString()}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' }}}
             />
           </Card>
         </Col>
@@ -230,7 +229,7 @@ const WorkflowOverview = () => {
               title="Expiring Contracts"
               value={data?.expiring_contracts || 0}
               prefix={<WarningOutlined />}
-              valueStyle={{ color: data?.expiring_contracts > 0 ? '#fa8c16' : '#52c41a' }}
+              styles={{ content: { color: data?.expiring_contracts > 0 ? '#fa8c16' : '#52c41a' }}}
             />
           </Card>
         </Col>
@@ -321,31 +320,31 @@ const WorkflowOverview = () => {
             </Button>
           </Empty>
         ) : (
-          <Collapse accordion>
-            {filteredHierarchy.map((proj) => (
-              <Panel
-                key={proj.uid}
-                header={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <ProjectOutlined />
-                    <strong>{proj.project_code}</strong>
-                    <span>—</span>
-                    <span>{proj.project_name}</span>
-                    <Tag color="cyan">{proj.client_name}</Tag>
-                    <Tag color={STATUS_COLORS[proj.status] || 'default'}>{proj.status}</Tag>
-                    <Badge
-                      count={proj.contracts?.length || 0}
-                      style={{ backgroundColor: '#722ed1' }}
-                      title="Contracts"
-                    />
-                    <Badge
-                      count={proj.contracts?.reduce((s, c) => s + (c.sites?.length || 0), 0) || 0}
-                      style={{ backgroundColor: '#52c41a' }}
-                      title="Sites"
-                    />
-                  </div>
-                }
-              >
+          <Collapse
+            accordion
+            items={filteredHierarchy.map((proj) => ({
+              key: proj.uid,
+              label: (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <ProjectOutlined />
+                  <strong>{proj.project_code}</strong>
+                  <span>—</span>
+                  <span>{proj.project_name}</span>
+                  <Tag color="cyan">{proj.client_name}</Tag>
+                  <Tag color={STATUS_COLORS[proj.status] || 'default'}>{proj.status}</Tag>
+                  <Badge
+                    count={proj.contracts?.length || 0}
+                    style={{ backgroundColor: '#722ed1' }}
+                    title="Contracts"
+                  />
+                  <Badge
+                    count={proj.contracts?.reduce((s, c) => s + (c.sites?.length || 0), 0) || 0}
+                    style={{ backgroundColor: '#52c41a' }}
+                    title="Sites"
+                  />
+                </div>
+              ),
+              children: (
                 <div style={{ paddingLeft: 16 }}>
                   <Button
                     type="link"
@@ -362,53 +361,52 @@ const WorkflowOverview = () => {
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
                     />
                   ) : (
-                    <Collapse>
-                      {proj.contracts.map((contract) => (
-                        <Panel
-                          key={contract.uid}
-                          header={
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                flexWrap: 'wrap',
-                              }}
+                    <Collapse
+                      items={proj.contracts.map((contract) => ({
+                        key: contract.uid,
+                        label: (
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <FileTextOutlined />
+                            <strong>{contract.contract_code}</strong>
+                            {contract.contract_name && (
+                              <span>— {contract.contract_name}</span>
+                            )}
+                            <Tag
+                              color={STATUS_COLORS[contract.status] || 'default'}
                             >
-                              <FileTextOutlined />
-                              <strong>{contract.contract_code}</strong>
-                              {contract.contract_name && (
-                                <span>— {contract.contract_name}</span>
-                              )}
+                              {contract.status}
+                            </Tag>
+                            {contract.days_remaining != null && (
                               <Tag
-                                color={STATUS_COLORS[contract.status] || 'default'}
+                                color={
+                                  contract.days_remaining <= 7
+                                    ? 'red'
+                                    : contract.days_remaining <= 30
+                                    ? 'orange'
+                                    : 'green'
+                                }
                               >
-                                {contract.status}
+                                {contract.days_remaining}d left
                               </Tag>
-                              {contract.days_remaining != null && (
-                                <Tag
-                                  color={
-                                    contract.days_remaining <= 7
-                                      ? 'red'
-                                      : contract.days_remaining <= 30
-                                      ? 'orange'
-                                      : 'green'
-                                  }
-                                >
-                                  {contract.days_remaining}d left
-                                </Tag>
-                              )}
-                              <Tag color="green">
-                                KD {Number(contract.contract_value || 0).toLocaleString()}
-                              </Tag>
-                              <Badge
-                                count={contract.sites?.length || 0}
-                                style={{ backgroundColor: '#52c41a' }}
-                                title="Sites"
-                              />
-                            </div>
-                          }
-                        >
+                            )}
+                            <Tag color="green">
+                              KD {Number(contract.contract_value || 0).toLocaleString()}
+                            </Tag>
+                            <Badge
+                              count={contract.sites?.length || 0}
+                              style={{ backgroundColor: '#52c41a' }}
+                              title="Sites"
+                            />
+                          </div>
+                        ),
+                        children: (
                           <div style={{ paddingLeft: 16 }}>
                             <Button
                               type="link"
@@ -490,14 +488,14 @@ const WorkflowOverview = () => {
                               </div>
                             )}
                           </div>
-                        </Panel>
-                      ))}
-                    </Collapse>
+                        ),
+                      }))}
+                    />
                   )}
                 </div>
-              </Panel>
-            ))}
-          </Collapse>
+              ),
+            }))}
+          />
         )}
       </Card>
     </div>

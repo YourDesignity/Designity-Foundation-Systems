@@ -69,7 +69,7 @@ const EmployeeProfilePage = () => {
     if (error) {
         return (
             <div style={{ padding: 24 }}>
-                <Alert type="error" message={error} showIcon />
+                <Alert type="error" title={error} showIcon />
                 <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/employees')} style={{ marginTop: 16 }}>
                     Back to Employees
                 </Button>
@@ -80,7 +80,7 @@ const EmployeeProfilePage = () => {
     if (!employee) {
         return (
             <div style={{ padding: 24 }}>
-                <Alert type="warning" message="Employee not found." showIcon />
+                <Alert type="warning" title="Employee not found." showIcon />
             </div>
         );
     }
@@ -116,7 +116,7 @@ const EmployeeProfilePage = () => {
                         />
                     </Col>
                     <Col xs={24} md={18}>
-                        <Space direction="vertical" size={4}>
+                        <Space orientation="vertical" size={4}>
                             <Title level={2} style={{ margin: 0 }}>{employee.name}</Title>
                             <Space wrap>
                                 <Tag color={employee.employee_type === 'Company' ? 'blue' : 'orange'} style={{ fontSize: 13 }}>

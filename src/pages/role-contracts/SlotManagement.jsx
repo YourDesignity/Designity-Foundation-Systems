@@ -191,7 +191,7 @@ const SlotManagement = () => {
                   {slot.replacement_employee_name && (
                     <Alert
                       type="info"
-                      message={`Replaced from ${slot.replacement_employee_name}`}
+                      title={`Replaced from ${slot.replacement_employee_name}`}
                       description={slot.replacement_reason || 'No reason provided'}
                     />
                   )}

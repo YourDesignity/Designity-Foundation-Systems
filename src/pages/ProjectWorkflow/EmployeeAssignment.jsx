@@ -277,7 +277,7 @@ const EmployeeAssignment = () => {
         confirmLoading={loading}
         okButtonProps={{ disabled: selectedEmployees.length === 0 }}
       >
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <Space orientation="vertical" style={{ width: '100%' }} size="large">
           <div>
             <p><strong>Site:</strong> {site?.name}</p>
             <p><strong>Available Slots:</strong> {site ? site.required_workers - site.assigned_workers : 0}</p>

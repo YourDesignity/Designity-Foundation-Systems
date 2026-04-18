@@ -182,12 +182,12 @@ const ContractDetailsPage = () => {
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Total Sites" value={sites.length} valueStyle={{ color: '#1890ff' }} />
+                <Statistic title="Total Sites" value={sites.length} styles={{ content: { color: '#1890ff' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
               <Card size="small">
-                <Statistic title="Active Sites" value={activeSites} valueStyle={{ color: '#52c41a' }} />
+                <Statistic title="Active Sites" value={activeSites} styles={{ content: { color: '#52c41a' }}} />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={6}>
@@ -195,7 +195,7 @@ const ContractDetailsPage = () => {
                 <Statistic
                   title="Total Capacity"
                   value={sites.reduce((s, x) => s + (x.required_workers || 0), 0)}
-                  valueStyle={{ color: '#722ed1' }}
+                  styles={{ content: { color: '#722ed1' }}}
                 />
               </Card>
             </Col>
@@ -242,7 +242,7 @@ const ContractDetailsPage = () => {
                     <Statistic
                       title="Company Employees"
                       value={workforce.company_employees}
-                      valueStyle={{ color: '#1890ff' }}
+                      styles={{ content: { color: '#1890ff' }}}
                     />
                   </Card>
                 </Col>
@@ -251,7 +251,7 @@ const ContractDetailsPage = () => {
                     <Statistic
                       title="Temp Workers"
                       value={workforce.temp_workers}
-                      valueStyle={{ color: '#fa8c16' }}
+                      styles={{ content: { color: '#fa8c16' }}}
                     />
                   </Card>
                 </Col>
@@ -261,7 +261,7 @@ const ContractDetailsPage = () => {
                       title="Temp Workers Cost"
                       value={Number(workforce.total_temp_cost || 0).toLocaleString()}
                       suffix="KD"
-                      valueStyle={{ color: '#f5222d' }}
+                      styles={{ content: { color: '#f5222d' }}}
                     />
                   </Card>
                 </Col>
@@ -271,14 +271,14 @@ const ContractDetailsPage = () => {
                       title="Fulfillment Rate"
                       value={Number(workforce.fulfillment_rate || 0).toFixed(1)}
                       suffix="%"
-                      valueStyle={{
+                      styles={{ content: {
                         color:
                           workforce.fulfillment_rate >= 80
                             ? '#52c41a'
                             : workforce.fulfillment_rate >= 50
                             ? '#fa8c16'
                             : '#f5222d',
-                      }}
+                      }}}
                     />
                   </Card>
                 </Col>
@@ -318,7 +318,7 @@ const ContractDetailsPage = () => {
                   title="Contract Value"
                   value={Number(contract?.contract_value || 0).toLocaleString()}
                   suffix="KD"
-                  valueStyle={{ color: '#52c41a' }}
+                  styles={{ content: { color: '#52c41a' }}}
                 />
               </Card>
             </Col>
@@ -328,7 +328,7 @@ const ContractDetailsPage = () => {
                   title="Temp Workers Cost"
                   value={Number(workforce?.total_temp_cost || 0).toLocaleString()}
                   suffix="KD"
-                  valueStyle={{ color: '#f5222d' }}
+                  styles={{ content: { color: '#f5222d' }}}
                 />
               </Card>
             </Col>
@@ -340,7 +340,7 @@ const ContractDetailsPage = () => {
                     (contract?.contract_value || 0) - (workforce?.total_temp_cost || 0)
                   ).toLocaleString()}
                   suffix="KD"
-                  valueStyle={{ color: '#1890ff' }}
+                  styles={{ content: { color: '#1890ff' }}}
                 />
               </Card>
             </Col>
@@ -370,7 +370,7 @@ const ContractDetailsPage = () => {
         <div>
           <Card size="small" title="Contract Document">
             {contract?.document_path ? (
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <Space>
                   <FilePdfOutlined style={{ color: '#1890ff', fontSize: 24 }} />
                   <div>
@@ -433,7 +433,7 @@ const ContractDetailsPage = () => {
       children: (
         <div>
           <Card size="small" title="Contract Timeline">
-            <Space direction="vertical" size={8} style={{ width: '100%' }}>
+            <Space orientation="vertical" size={8} style={{ width: '100%' }}>
               {contract && (
                 <div className="activity-item">
                   <Tag color="green">Created</Tag>
@@ -490,28 +490,21 @@ const ContractDetailsPage = () => {
   return (
     <div className="contract-details-page">
       {/* Breadcrumb */}
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>
-          <Link to="/dashboard">Dashboard</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link to="/project-workflow">Projects</Link>
-        </Breadcrumb.Item>
-        {project && (
-          <Breadcrumb.Item>
-            <Link to={`/project-workflow/${contract.project_id}/details`}>
-              {project.project_name}
-            </Link>
-          </Breadcrumb.Item>
-        )}
-        <Breadcrumb.Item>Contracts</Breadcrumb.Item>
-        <Breadcrumb.Item>{contract.contract_code}</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[
+          { title: <Link to="/dashboard">Dashboard</Link> },
+          { title: <Link to="/project-workflow">Projects</Link> },
+          ...(project ? [{ title: <Link to={`/project-workflow/${contract.project_id}/details`}>{project.project_name}</Link> }] : []),
+          { title: 'Contracts' },
+          { title: contract.contract_code },
+        ]}
+      />
 
       {/* Expiry warning */}
       {isExpiringSoon && (
         <Alert
-          message={
+          title={
             daysRemaining <= 0
               ? 'This contract has expired!'
               : `This contract expires in ${daysRemaining} day(s)!`
@@ -559,7 +552,7 @@ const ContractDetailsPage = () => {
       <Card className="overview-card" style={{ marginBottom: 24 }}>
         <Row gutter={24}>
           <Col xs={24} md={16}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               {project && (
                 <div>
                   <Text type="secondary">Project: </Text>
@@ -617,7 +610,7 @@ const ContractDetailsPage = () => {
               title="Contract Value"
               value={Number(contract.contract_value || 0).toLocaleString()}
               suffix="KD"
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' }}}
             />
           </Card>
         </Col>
@@ -627,7 +620,7 @@ const ContractDetailsPage = () => {
               title="Total Sites"
               value={sites.length}
               prefix={<EnvironmentOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' }}}
             />
           </Card>
         </Col>
@@ -636,7 +629,7 @@ const ContractDetailsPage = () => {
             <Statistic
               title="Company Workers"
               value={workforce?.company_employees || 0}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' }}}
             />
           </Card>
         </Col>
@@ -645,7 +638,7 @@ const ContractDetailsPage = () => {
             <Statistic
               title="Temp Workers"
               value={workforce?.temp_workers || 0}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' }}}
             />
           </Card>
         </Col>

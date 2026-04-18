@@ -51,7 +51,7 @@ function SegmentCell({ segment, managerName, managerDate, segmentLabel, onOverri
   if (!segment) return <Text type="secondary">—</Text>;
   const isMissed = segment.status?.toLowerCase() === 'missed';
   return (
-    <Space direction="vertical" size={2}>
+    <Space orientation="vertical" size={2}>
       <StatusTag status={segment.status} />
       {segment.time && <Text type="secondary" style={{ fontSize: 12 }}>{segment.time}</Text>}
       {isMissed && (
@@ -198,7 +198,7 @@ function ManagerAttendanceAdminPage() {
 
   return (
     <div className="layout-content">
-      <Card bordered={false} className="criclebox mb-24" style={{ marginBottom: 24 }}>
+      <Card variant="borderless" className="criclebox mb-24" style={{ marginBottom: 24 }}>
         <Row align="middle" justify="space-between" wrap={false}>
           <Col>
             <Title level={4} style={{ margin: 0 }}>
@@ -229,7 +229,7 @@ function ManagerAttendanceAdminPage() {
 
       <Row gutter={[24, 0]}>
         <Col xs={24}>
-          <Card bordered={false} className="criclebox tablespace mb-24">
+          <Card variant="borderless" className="criclebox tablespace mb-24">
             <div className="table-responsive">
               <Table
                 columns={columns}
