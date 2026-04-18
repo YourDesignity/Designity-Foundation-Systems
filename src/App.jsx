@@ -55,6 +55,7 @@ import Dashboard from './pages/Dashboard';
 import WorkforceDashboard from './pages/WorkforceDashboard';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import MyProfile from './pages/MyProfile';
+import ErrorBoundary from './components/ErrorBoundary';
 import RoleContractFulfillmentOverview from './pages/role-contracts';
 import DailyFulfillmentRecord from './pages/role-contracts/DailyFulfillmentRecord';
 import MonthlyReportDashboard from './pages/role-contracts/MonthlyReportDashboard';
@@ -70,24 +71,6 @@ import PurchaseOrders from './pages/Inventory/PurchaseOrders';
 import "antd/dist/reset.css"; 
 import "./assets/styles/main.css";
 import "./assets/styles/responsive.css";
-
-// Error Boundary to catch crashes
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError(error) { return { hasError: true }; }
-  render() { 
-    if (this.state.hasError) { 
-      return (
-        <div style={{padding: 50, textAlign: 'center'}}>
-          <h1 style={{color: '#ff4d4f'}}>Financial System Error</h1>
-          <p>The dashboard encountered a crash while fetching data. Please refresh.</p>
-          <button onClick={() => window.location.reload()} style={{padding: '10px 20px', cursor: 'pointer'}}>Refresh Dashboard</button>
-        </div>
-      ); 
-    } 
-    return this.props.children; 
-  }
-}
 
 const App = () => {
   return (

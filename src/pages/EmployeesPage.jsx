@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { 
-  Table, Card, Input, Select, Button, Space, Avatar, Typography, Tag, Row, Col, Modal, Form, message, Badge, Tooltip, Upload
+  Table, Card, Input, Select, Button, Space, Avatar, Typography, Tag, Row, Col, Modal, Form, Badge, Tooltip, Upload
 } from 'antd';
 import { 
   SearchOutlined, PlusOutlined, FileTextOutlined, 
@@ -16,6 +16,7 @@ import { employeeService } from '../services';
 import { useEmployees, useDeleteEmployee, useUpdateEmployee, useUploadEmployeePhoto } from '../hooks/useEmployees';
 import websocketService from '../services/websocketService';
 import { useAuth } from '../context/AuthContext'; 
+import { toast } from '../utils/toast';
 
 // --- Typography Extraction ---
 const { Title, Text } = Typography;
@@ -100,10 +101,10 @@ function EmployeesPage() {
         setIsPayslipLoading(true);
         try {
             await createPayslips(selectedRowKeys);
-            message.success('Payslips generated for selected team members');
+            toast.success('Payslips generated for selected team members');
             setSelectedRowKeys([]);
         } catch (err) { 
-            message.error(err.message || "Failed to generate payslips"); 
+            toast.error(err.message || "Failed to generate payslips"); 
         } finally { 
             setIsPayslipLoading(false); 
         }
@@ -162,7 +163,7 @@ function EmployeesPage() {
             setEditPhotoPreview(null);
         } catch (err) {
             console.error("Update failed:", err);
-            message.error("Failed to update employee details. Please try again.");
+            toast.error("Failed to update employee details. Please try again.");
         }
     };
 
