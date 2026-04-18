@@ -30,3 +30,6 @@ export * from './useInvoices';
 
 // Dashboard hooks
 export * from './useDashboard';
+
+// Utility hooks
+export { default as useDebounce } from './useDebounce';

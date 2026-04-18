@@ -1,71 +1,74 @@
 // src/App.js
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// --- Layout ---
+// --- Layout (eager – always needed) ---
 import Main from './components/layout/Main';
-
-// --- Pages ---
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import EmployeesPage from './pages/EmployeesPage';
-import EmployeeProfilePage from './pages/EmployeeProfilePage';
-import AttendancePage from './pages/AttendancePage';
-import DutyListPage from './pages/DutyList';
-import AddEmployeePage from './pages/AddEmployee';
-import MessagePage from './pages/MessagePage';
-import ManagerMessagesPage from './pages/ManagerMessagesPage';
-import ProjectsPage from './pages/ProjectsPage'; 
-import InventoryPage from './pages/InventoryPage';
-import SiteManagement from './components/SiteManagement'; 
-import DesignationManagement from './pages/DesignationManagement';
-import AdminManagementPage from './pages/AdminManagementPage';
-import ManagersPage from './pages/ManagersPage';
-import CreateManagerPage from './pages/CreateManagerPage';
-import EditManagerPage from './pages/EditManagerPage';
-import ManagerAttendanceAdminPage from './pages/ManagerAttendanceAdminPage';
-import ManagerMyAttendancePage from './pages/ManagerMyAttendancePage';
-import PayslipPage from './pages/PayslipPage';
-import OvertimePage from './pages/OvertimePage';
-import DeductionsPage from './pages/DeductionsPage';
-import VehicleManagementPage from './pages/VehicleManagement'; 
-
-// --- NEW FINANCIAL PAGES ---
-import FinancePage from './pages/FinancePage'; // <--- NEW: Profit & Loss Page
-import CompanySettingsPage from './pages/CompanySettingsPage';
-
-// --- PROJECT WORKFLOW PAGES ---
-import ProjectDashboard from './pages/ProjectWorkflow/ProjectDashboard';
-import ContractManagementPage from './pages/ProjectWorkflow/ContractManagementPage';
-import SiteManagementPage from './pages/ProjectWorkflow/SiteManagementPage';
-import EmployeeAssignment from './pages/ProjectWorkflow/EmployeeAssignment';
-import TempWorkerManagement from './pages/ProjectWorkflow/TempWorkerManagement';
-import WorkflowPage from './pages/WorkflowPage';
-import ProjectDetailsPage from './pages/ProjectWorkflow/ProjectDetailsPage';
-import ContractDetailsPage from './pages/ProjectWorkflow/ContractDetailsPage';
-import SiteDetailsPage from './pages/ProjectWorkflow/SiteDetailsPage';
-import WorkflowOverview from './pages/ProjectWorkflow/WorkflowOverview';
-
-// --- PHASE 6: ANALYTICS & DASHBOARD PAGES ---
-import Dashboard from './pages/Dashboard';
-import WorkforceDashboard from './pages/WorkforceDashboard';
-import ProjectAnalytics from './pages/ProjectAnalytics';
-import MyProfile from './pages/MyProfile';
+import PageLoader from './components/PageLoader';
 import ErrorBoundary from './components/ErrorBoundary';
-import RoleContractFulfillmentOverview from './pages/role-contracts';
-import DailyFulfillmentRecord from './pages/role-contracts/DailyFulfillmentRecord';
-import MonthlyReportDashboard from './pages/role-contracts/MonthlyReportDashboard';
-import SlotManagement from './pages/role-contracts/SlotManagement';
 
-// --- DOCUMENT MANAGEMENT & INVENTORY SYSTEM ---
-import EmployeeDocuments from './pages/Employees/EmployeeDocuments';
-import MaterialsList from './pages/Inventory/MaterialsList';
-import SuppliersList from './pages/Inventory/SuppliersList';
-import PurchaseOrders from './pages/Inventory/PurchaseOrders';
+// --- Pages (lazy-loaded for code splitting) ---
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const EmployeesPage = lazy(() => import('./pages/EmployeesPage'));
+const EmployeeProfilePage = lazy(() => import('./pages/EmployeeProfilePage'));
+const AttendancePage = lazy(() => import('./pages/AttendancePage'));
+const DutyListPage = lazy(() => import('./pages/DutyList'));
+const AddEmployeePage = lazy(() => import('./pages/AddEmployee'));
+const MessagePage = lazy(() => import('./pages/MessagePage'));
+const ManagerMessagesPage = lazy(() => import('./pages/ManagerMessagesPage'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
+const SiteManagement = lazy(() => import('./components/SiteManagement'));
+const DesignationManagement = lazy(() => import('./pages/DesignationManagement'));
+const AdminManagementPage = lazy(() => import('./pages/AdminManagementPage'));
+const ManagersPage = lazy(() => import('./pages/ManagersPage'));
+const CreateManagerPage = lazy(() => import('./pages/CreateManagerPage'));
+const EditManagerPage = lazy(() => import('./pages/EditManagerPage'));
+const ManagerAttendanceAdminPage = lazy(() => import('./pages/ManagerAttendanceAdminPage'));
+const ManagerMyAttendancePage = lazy(() => import('./pages/ManagerMyAttendancePage'));
+const PayslipPage = lazy(() => import('./pages/PayslipPage'));
+const OvertimePage = lazy(() => import('./pages/OvertimePage'));
+const DeductionsPage = lazy(() => import('./pages/DeductionsPage'));
+const VehicleManagementPage = lazy(() => import('./pages/VehicleManagement'));
+
+// --- Financial pages ---
+const FinancePage = lazy(() => import('./pages/FinancePage'));
+const CompanySettingsPage = lazy(() => import('./pages/CompanySettingsPage'));
+
+// --- Project Workflow pages ---
+const ProjectDashboard = lazy(() => import('./pages/ProjectWorkflow/ProjectDashboard'));
+const ContractManagementPage = lazy(() => import('./pages/ProjectWorkflow/ContractManagementPage'));
+const SiteManagementPage = lazy(() => import('./pages/ProjectWorkflow/SiteManagementPage'));
+const EmployeeAssignment = lazy(() => import('./pages/ProjectWorkflow/EmployeeAssignment'));
+const TempWorkerManagement = lazy(() => import('./pages/ProjectWorkflow/TempWorkerManagement'));
+const WorkflowPage = lazy(() => import('./pages/WorkflowPage'));
+const ProjectDetailsPage = lazy(() => import('./pages/ProjectWorkflow/ProjectDetailsPage'));
+const ContractDetailsPage = lazy(() => import('./pages/ProjectWorkflow/ContractDetailsPage'));
+const SiteDetailsPage = lazy(() => import('./pages/ProjectWorkflow/SiteDetailsPage'));
+const WorkflowOverview = lazy(() => import('./pages/ProjectWorkflow/WorkflowOverview'));
+
+// --- Analytics & Dashboard pages ---
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const WorkforceDashboard = lazy(() => import('./pages/WorkforceDashboard'));
+const ProjectAnalytics = lazy(() => import('./pages/ProjectAnalytics'));
+const MyProfile = lazy(() => import('./pages/MyProfile'));
+
+// --- Role contracts pages ---
+const RoleContractFulfillmentOverview = lazy(() => import('./pages/role-contracts'));
+const DailyFulfillmentRecord = lazy(() => import('./pages/role-contracts/DailyFulfillmentRecord'));
+const MonthlyReportDashboard = lazy(() => import('./pages/role-contracts/MonthlyReportDashboard'));
+const SlotManagement = lazy(() => import('./pages/role-contracts/SlotManagement'));
+
+// --- Document Management & Inventory ---
+const EmployeeDocuments = lazy(() => import('./pages/Employees/EmployeeDocuments'));
+const MaterialsList = lazy(() => import('./pages/Inventory/MaterialsList'));
+const SuppliersList = lazy(() => import('./pages/Inventory/SuppliersList'));
+const PurchaseOrders = lazy(() => import('./pages/Inventory/PurchaseOrders'));
 
 // --- Styles ---
 import "antd/dist/reset.css"; 
@@ -76,77 +79,82 @@ const App = () => {
   return (
     <AuthProvider>
       <ErrorBoundary>
-        <Routes>
-          {/* Public Route */}
-          <Route path="/login" element={<LoginPage />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public Route */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Routes (Wrapped in Main Layout) */}
-          <Route element={<Main />}>
-            <Route path="dashboard" element={<DashboardPage />} />
-            
-            {/* Analytics & Workforce */}
-            <Route path="workforce-allocation" element={<WorkforceDashboard />} />
-            <Route path="analytics" element={<ProjectAnalytics />} />
-            
-            {/* HR & Workforce */}
-            <Route path="employees" element={<EmployeesPage />} />
-            <Route path="employees/:employeeId" element={<EmployeeProfilePage />} />
-            <Route path="add-employee" element={<AddEmployeePage />} />
-            <Route path="attendance" element={<AttendancePage />} />
-            <Route path="duty-list" element={<DutyListPage />} />
-            <Route path="payslips" element={<PayslipPage />} />
-            <Route path="overtime" element={<OvertimePage />} />
-            <Route path="deductions" element={ <DeductionsPage />} />
-            
-            {/* Operations */}
-            <Route path="vehicles" element={<VehicleManagementPage />} />
-            <Route path="projects" element={<ProjectsPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
-            <Route path="inventory/materials" element={<MaterialsList />} />
-            <Route path="inventory/suppliers" element={<SuppliersList />} />
-            <Route path="inventory/purchase-orders" element={<PurchaseOrders />} />
-            <Route path="site-management" element={<SiteManagement />} />
-            <Route path="designations" element={<DesignationManagement />} />
+            {/* Protected Routes (Wrapped in Main Layout) */}
+            <Route element={<Main />}>
+              <Route path="dashboard" element={<DashboardPage />} />
+              
+              {/* Analytics & Workforce */}
+              <Route path="workforce-allocation" element={<WorkforceDashboard />} />
+              <Route path="analytics" element={<ProjectAnalytics />} />
+              
+              {/* HR & Workforce */}
+              <Route path="employees" element={<EmployeesPage />} />
+              <Route path="employees/:employeeId" element={<EmployeeProfilePage />} />
+              <Route path="add-employee" element={<AddEmployeePage />} />
+              <Route path="attendance" element={<AttendancePage />} />
+              <Route path="duty-list" element={<DutyListPage />} />
+              <Route path="payslips" element={<PayslipPage />} />
+              <Route path="overtime" element={<OvertimePage />} />
+              <Route path="deductions" element={ <DeductionsPage />} />
+              
+              {/* Operations */}
+              <Route path="vehicles" element={<VehicleManagementPage />} />
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="inventory/materials" element={<MaterialsList />} />
+              <Route path="inventory/suppliers" element={<SuppliersList />} />
+              <Route path="inventory/purchase-orders" element={<PurchaseOrders />} />
+              <Route path="site-management" element={<SiteManagement />} />
+              <Route path="designations" element={<DesignationManagement />} />
 
-            {/* Employee Documents */}
-            <Route path="employees/:employeeId/documents" element={<EmployeeDocuments />} />
+              {/* Employee Documents */}
+              <Route path="employees/:employeeId/documents" element={<EmployeeDocuments />} />
 
-            {/* Project Workflow System */}
-            <Route path="project-workflow" element={<ProjectDashboard />} />
-            <Route path="project-workflow/overview" element={<WorkflowOverview />} />
-            <Route path="project-workflow/:projectId/details" element={<ProjectDetailsPage />} />
-            <Route path="project-workflow/contracts/:contractId/details" element={<ContractDetailsPage />} />
-            <Route path="project-workflow/sites/:siteId/details" element={<SiteDetailsPage />} />
-            <Route path="project-workflow/:projectId/contracts" element={<ContractManagementPage />} />
-            <Route path="project-workflow/:projectId/sites" element={<SiteManagementPage />} />
-            <Route path="sites/:siteId/assign-employees" element={<EmployeeAssignment />} />
-            <Route path="sites/:siteId/workforce" element={<TempWorkerManagement />} />
-            <Route path="workflow" element={<WorkflowPage />} />
-            <Route path="role-contracts/fulfillment" element={<RoleContractFulfillmentOverview />} />
-            <Route path="role-contracts/record-daily" element={<DailyFulfillmentRecord />} />
-            <Route path="role-contracts/monthly-report" element={<MonthlyReportDashboard />} />
-            <Route path="role-contracts/manage-slots" element={<SlotManagement />} />
-            
-            {/* --- NEW FINANCIAL INTEL ROUTE --- */}
-            <Route path="finance" element={<FinancePage />} /> {/* <--- ADDED THIS */}
-            
-            {/* Administration */}
-            <Route path="admins" element={<AdminManagementPage />} />
-            <Route path="managers" element={<ManagersPage />} />
-            <Route path="managers/create" element={<CreateManagerPage />} />
-            <Route path="managers/edit/:id" element={<EditManagerPage />} />
-            <Route path="manager-attendance" element={<ManagerAttendanceAdminPage />} />
-            <Route path="my-attendance" element={<ManagerMyAttendancePage />} />
-            <Route path="messages" element={<MessagePage />} />
-            <Route path="manager-messages" element={<ManagerMessagesPage />} />
-            <Route path="settings" element={<CompanySettingsPage />} />
-            <Route path="my-profile" element={<MyProfile />} />
-          </Route>
+              {/* Project Workflow System */}
+              <Route path="project-workflow" element={<ProjectDashboard />} />
+              <Route path="project-workflow/overview" element={<WorkflowOverview />} />
+              <Route path="project-workflow/:projectId/details" element={<ProjectDetailsPage />} />
+              <Route path="project-workflow/contracts/:contractId/details" element={<ContractDetailsPage />} />
+              <Route path="project-workflow/sites/:siteId/details" element={<SiteDetailsPage />} />
+              <Route path="project-workflow/:projectId/contracts" element={<ContractManagementPage />} />
+              <Route path="project-workflow/:projectId/sites" element={<SiteManagementPage />} />
+              <Route path="sites/:siteId/assign-employees" element={<EmployeeAssignment />} />
+              <Route path="sites/:siteId/workforce" element={<TempWorkerManagement />} />
+              <Route path="workflow" element={<WorkflowPage />} />
+              <Route path="role-contracts/fulfillment" element={<RoleContractFulfillmentOverview />} />
+              <Route path="role-contracts/record-daily" element={<DailyFulfillmentRecord />} />
+              <Route path="role-contracts/monthly-report" element={<MonthlyReportDashboard />} />
+              <Route path="role-contracts/manage-slots" element={<SlotManagement />} />
+              
+              {/* Financial */}
+              <Route path="finance" element={<FinancePage />} />
+              
+              {/* Administration */}
+              <Route path="admins" element={<AdminManagementPage />} />
+              <Route path="managers" element={<ManagersPage />} />
+              <Route path="managers/create" element={<CreateManagerPage />} />
+              <Route path="managers/edit/:id" element={<EditManagerPage />} />
+              <Route path="manager-attendance" element={<ManagerAttendanceAdminPage />} />
+              <Route path="my-attendance" element={<ManagerMyAttendancePage />} />
+              <Route path="messages" element={<MessagePage />} />
+              <Route path="manager-messages" element={<ManagerMessagesPage />} />
+              <Route path="settings" element={<CompanySettingsPage />} />
+              <Route path="my-profile" element={<MyProfile />} />
 
-          {/* Redirects */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+              {/* Overview Dashboard (project workflow analytics) */}
+              <Route path="overview" element={<Dashboard />} />
+            </Route>
+
+            {/* Redirects */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
         <ToastContainer
           position="top-right"
           autoClose={3000}
@@ -165,3 +173,4 @@ const App = () => {
 };
 
 export default App;
+
