@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services';
 
+const DASHBOARD_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Fetch dashboard metrics (headcount, financials, alerts).
  */
@@ -19,7 +21,7 @@ export const useDashboardTrends = () => {
   return useQuery({
     queryKey: ['dashboardTrends'],
     queryFn: () => dashboardService.getTrends(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: DASHBOARD_STALE_TIME,
   });
 };
 
@@ -31,7 +33,7 @@ export const useAttendanceTrend = () => {
   return useQuery({
     queryKey: ['attendanceTrend'],
     queryFn: () => dashboardService.getAttendanceTrend(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: DASHBOARD_STALE_TIME,
   });
 };
 
@@ -43,7 +45,7 @@ export const useRevenueTrend = () => {
   return useQuery({
     queryKey: ['revenueTrend'],
     queryFn: () => dashboardService.getRevenueTrend(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: DASHBOARD_STALE_TIME,
   });
 };
 
@@ -55,7 +57,7 @@ export const useCostBreakdown = () => {
   return useQuery({
     queryKey: ['costBreakdown'],
     queryFn: () => dashboardService.getCostBreakdown(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: DASHBOARD_STALE_TIME,
   });
 };
 
@@ -67,6 +69,6 @@ export const useProjectMetrics = () => {
   return useQuery({
     queryKey: ['projectMetrics'],
     queryFn: () => dashboardService.getProjectMetrics(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: DASHBOARD_STALE_TIME,
   });
 };
