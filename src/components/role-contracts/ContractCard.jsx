@@ -102,7 +102,7 @@ const ContractCard = ({ contract, onClick }) => {
         )}
       </Space>
 
-      <Space direction="vertical" size={4} style={{ width: '100%', marginBottom: 10 }}>
+      <Space orientation="vertical" size={4} style={{ width: '100%', marginBottom: 10 }}>
         <Space size={16}>
           <Tooltip title="Start – End dates">
             <Text style={{ fontSize: 11, color: '#888' }}>

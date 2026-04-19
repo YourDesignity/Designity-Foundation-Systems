@@ -97,7 +97,7 @@ const ApprovalItem = ({ approval, contractId, onActionComplete }) => {
           )}
 
           {isPending && (
-            <Space direction="vertical" style={{ width: '100%', marginTop: 12 }} size={8}>
+            <Space orientation="vertical" style={{ width: '100%', marginTop: 12 }} size={8}>
               <TextArea
                 rows={2}
                 placeholder="Add a comment (required for rejection)…"

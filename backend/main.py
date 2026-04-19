@@ -57,6 +57,7 @@ from backend.routers.materials import materials_router, suppliers_router, purcha
 from backend.routers.role_contracts import contract_roles_router, daily_fulfillment_router
 from backend.routers.payroll import payroll_router
 from backend.routers.contracts import router as contracts_api_router
+from backend.routers.modules import router as modules_router
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -358,6 +359,8 @@ app.include_router(daily_fulfillment_router)
 app.include_router(payroll_router)
 # NEW: Contracts API (LabourContract CRUD at /api/contracts)
 app.include_router(contracts_api_router)
+# NEW: Module Settings API (/api/modules/settings)
+app.include_router(modules_router)
 
 @app.get("/", tags=["Root"])
 def read_root():

@@ -260,7 +260,7 @@ const ModuleSettingsPage = () => {
           {/* Module selector */}
           <Col xs={24} md={6}>
             <Card size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 {MODULE_DEFS.map((mod) => (
                   <Button
                     key={mod.key}

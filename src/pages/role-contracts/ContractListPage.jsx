@@ -324,7 +324,7 @@ const ContractListPage = () => {
 
       {/* Content */}
       {viewMode === 'table' ? (
-        <Card bodyStyle={{ padding: 0 }}>
+        <Card styles={{ body: { padding: 0 } }}>
           <Table
             dataSource={contracts}
             columns={columns}

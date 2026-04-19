@@ -39,6 +39,8 @@ from backend.models.schedules import (
     NotificationLog,
     RecurringSchedule,
 )
+# Module settings (singleton)
+from backend.models.module_settings import GlobalModuleSettings
 
 # Load Environment Variables
 env_path = Path("./backend/.env") 
@@ -96,6 +98,8 @@ async def init_db():
                 ScheduledJob,
                 NotificationLog,
                 RecurringSchedule,
+                # Module settings (singleton)
+                GlobalModuleSettings,
             ]
         )
         print(f"✅ Connected to MongoDB at {DB_NAME}")
