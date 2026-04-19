@@ -1,4 +1,5 @@
 import os
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
@@ -60,9 +61,8 @@ async def upload_vehicle_photo(
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
-    # Save file
-    ext = os.path.splitext(file.filename or "photo.jpg")[1] or ".jpg"
-    filename = f"vehicle_{vehicle_uid}_{len(vehicle.image_urls) + 1}{ext}"
+    # Use a server-generated UUID path — no user-controlled data in the filename
+    filename = f"veh_{uuid.uuid4().hex}.jpg"
     file_path = os.path.join(VEHICLE_PHOTOS_DIR, filename)
     content = await file.read()
     with open(file_path, "wb") as f:

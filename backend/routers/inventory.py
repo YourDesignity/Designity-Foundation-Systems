@@ -1,4 +1,5 @@
 import os
+import uuid
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from typing import List
 from backend.models import InventoryItem
@@ -39,8 +40,8 @@ async def upload_inventory_photo(
     if not item:
         raise HTTPException(status_code=404, detail="Inventory item not found")
 
-    ext = os.path.splitext(file.filename or "photo.jpg")[1] or ".jpg"
-    filename = f"inventory_{uid}_{len(item.image_urls) + 1}{ext}"
+    # Use a server-generated UUID path — no user-controlled data in the filename
+    filename = f"inv_{uuid.uuid4().hex}.jpg"
     file_path = os.path.join(INVENTORY_PHOTOS_DIR, filename)
     content = await file.read()
     with open(file_path, "wb") as f:
