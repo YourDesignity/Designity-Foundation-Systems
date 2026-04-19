@@ -27,6 +27,18 @@ from backend.models.contracts import (
     GoodsContract,
     HybridContract,
 )
+# Phase 5D: Workflow audit trail
+from backend.models.workflow_history import (
+    WorkflowHistory,
+    ApprovalRequest,
+    WorkflowEvent,
+)
+# Phase 5E: Scheduling & automation
+from backend.models.schedules import (
+    ScheduledJob,
+    NotificationLog,
+    RecurringSchedule,
+)
 
 # Load Environment Variables
 env_path = Path("./backend/.env") 
@@ -76,6 +88,14 @@ async def init_db():
                 RoleBasedContract,
                 GoodsContract,
                 HybridContract,
+                # Phase 5D: Workflow audit trail
+                WorkflowHistory,
+                ApprovalRequest,
+                WorkflowEvent,
+                # Phase 5E: Scheduling & automation
+                ScheduledJob,
+                NotificationLog,
+                RecurringSchedule,
             ]
         )
         print(f"✅ Connected to MongoDB at {DB_NAME}")

@@ -8,8 +8,14 @@ Scripts for populating (and clearing) the Montreal database with realistic test 
 
 | File | Purpose |
 |------|---------|
-| `inject_test_data.py` | Creates 600+ records across all collections |
-| `clear_test_data.py` | Safely removes all test data with confirmation |
+| `inject_test_data.py` | Creates 600+ records across all collections (legacy) |
+| `clear_test_data.py` | Safely removes all legacy test data with confirmation |
+| `seed_phase5_data.py` | **NEW** – Phase 5C/5D/5E comprehensive seed (700+ records) |
+| `clear_phase5_data.py` | **NEW** – Safely removes all Phase 5 test data |
+| `README_PHASE5.md` | **NEW** – Full documentation for Phase 5 seed scripts |
+
+> **Phase 5 users:** See [`README_PHASE5.md`](README_PHASE5.md) for the updated seed script
+> covering workflow states, module assignments, scheduling, and approval requests.
 
 ---
 
