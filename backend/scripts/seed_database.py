@@ -540,7 +540,7 @@ async def create_employees(admins: List[Admin]) -> List[Employee]:
             basic_salary=salary,
             allowance=allowance,
             standard_work_days=28,
-            date_of_joining=days_ago(random.randint(30, 1825)),
+            date_of_joining=to_midnight(days_ago(random.randint(30, 1825))),
         )
         await emp.insert()
         employees.append(emp)
