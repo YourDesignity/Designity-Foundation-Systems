@@ -258,7 +258,7 @@ const AuditTrailPage = () => {
       key: 'user_name',
       width: 140,
       render: (name, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong style={{ fontSize: 13 }}>{name}</Text>
           <Text type="secondary" style={{ fontSize: 11 }}>{record.user_role}</Text>
         </Space>
@@ -270,7 +270,7 @@ const AuditTrailPage = () => {
       key: 'action',
       width: 180,
       render: (action, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Tag color={CATEGORY_COLORS[record.category] || 'default'} style={{ fontSize: 11 }}>
             {ACTION_LABELS[action] || action}
           </Tag>
@@ -283,7 +283,7 @@ const AuditTrailPage = () => {
       key: 'entity',
       width: 150,
       render: (_, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text style={{ fontSize: 12 }}>{record.entity_name || record.entity_id || '—'}</Text>
           <Text type="secondary" style={{ fontSize: 11 }}>{record.entity_type}</Text>
         </Space>
@@ -404,7 +404,7 @@ const AuditTrailPage = () => {
         </Row>
       </Card>
 
-      <Card bodyStyle={{ padding: 0 }}>
+      <Card styles={{ body: { padding: 0 } }}>
         <Table
           rowKey="id"
           dataSource={logs}

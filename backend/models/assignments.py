@@ -1,7 +1,7 @@
 """Assignment domain models."""
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from beanie import Document
 from pydantic import Field, field_validator
@@ -95,6 +95,113 @@ class EmployeeAssignment(Document):
             "status",
             "assignment_start",
             "assignment_end",
+        ]
+
+
+class InventoryAssignment(Document):
+    """
+    Tracks inventory items assigned to contracts/sites.
+    """
+
+    uid: int
+
+    # Inventory Information
+    inventory_id: int  # 🔗 Linked to InventoryItem.uid
+    inventory_name: str
+    quantity: float = 1.0
+    unit: Optional[str] = None
+
+    # Contract/Site Linking
+    contract_id: int
+    contract_code: Optional[str] = None
+    project_id: Optional[int] = None
+    site_id: Optional[int] = None
+
+    # Assignment Period
+    assigned_date: datetime = Field(default_factory=datetime.now)
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+    # Status
+    status: str = "Active"  # Active | Returned | Consumed
+
+    # Notes
+    notes: Optional[str] = None
+
+    # Timestamps
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    created_by_admin_id: Optional[int] = None
+
+    @field_validator("assigned_date", "start_date", "end_date", mode="before")
+    @classmethod
+    def coerce_dates(cls, v):
+        return _coerce_date_to_datetime(v)
+
+    class Settings:
+        name = "inventory_assignments"
+        indexes = [
+            "uid",
+            "inventory_id",
+            "contract_id",
+            "project_id",
+            "site_id",
+            "status",
+        ]
+
+
+class VehicleAssignment(Document):
+    """
+    Tracks vehicles assigned to contracts/sites.
+    """
+
+    uid: int
+
+    # Vehicle Information
+    vehicle_id: int  # 🔗 Linked to Vehicle.uid
+    vehicle_plate: Optional[str] = None
+    vehicle_model: Optional[str] = None
+
+    # Driver (optional)
+    driver_ids: List[int] = []
+
+    # Contract/Site Linking
+    contract_id: int
+    contract_code: Optional[str] = None
+    project_id: Optional[int] = None
+    site_id: Optional[int] = None
+
+    # Assignment Period
+    assigned_date: datetime = Field(default_factory=datetime.now)
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    starting_mileage: Optional[float] = None
+
+    # Status
+    status: str = "Active"  # Active | Returned | Completed
+
+    # Notes
+    notes: Optional[str] = None
+
+    # Timestamps
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    created_by_admin_id: Optional[int] = None
+
+    @field_validator("assigned_date", "start_date", "end_date", mode="before")
+    @classmethod
+    def coerce_dates(cls, v):
+        return _coerce_date_to_datetime(v)
+
+    class Settings:
+        name = "vehicle_assignments"
+        indexes = [
+            "uid",
+            "vehicle_id",
+            "contract_id",
+            "project_id",
+            "site_id",
+            "status",
         ]
 
 

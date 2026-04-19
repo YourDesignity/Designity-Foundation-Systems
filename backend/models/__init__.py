@@ -6,7 +6,7 @@ from backend.models.admin import (
     ManagerAttendanceConfig,
     ManagerProfile,
 )
-from backend.models.assignments import DutyAssignment, EmployeeAssignment, TemporaryAssignment
+from backend.models.assignments import DutyAssignment, EmployeeAssignment, InventoryAssignment, TemporaryAssignment, VehicleAssignment
 from backend.models.base import Counter, MemoryNode, _coerce_date_to_datetime
 from backend.models.finance import Invoice, InvoiceItem
 from backend.models.hr import Attendance, Designation, Employee, Schedule, SubstituteAssignment
@@ -93,6 +93,8 @@ __all__ = [
     # Backward-compatible alias
     "Contract",
     "EmployeeAssignment",
+    "InventoryAssignment",
+    "VehicleAssignment",
     "TemporaryAssignment",
     "Conversation",
     "Message",
