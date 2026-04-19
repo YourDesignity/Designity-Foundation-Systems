@@ -1,7 +1,7 @@
 """Project, site, and contract domain models."""
 
 from datetime import date, datetime, time
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from beanie import Document, Indexed
 from pydantic import BaseModel, Field, field_validator
@@ -223,6 +223,10 @@ class Contract(Document):
     total_daily_cost: float = 0.0  # Sum of all slot daily rates
     total_role_slots: int = 0  # Total number of role slots
     roles_by_designation: Dict[str, int] = {}  # e.g. {"Driver": 5, "Cleaner": 10}
+
+    # ===== MODULE CONFIGURATION (Phase 5C) =====
+    enabled_modules: List[str] = []  # e.g. ["employee", "inventory", "vehicle"]
+    module_config: Dict[str, Any] = {}  # Module-specific settings keyed by module name
 
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.now)
