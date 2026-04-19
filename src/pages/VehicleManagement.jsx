@@ -174,25 +174,40 @@ function VehicleManagementPage() {
   };
 
   const handleUploadVehiclePhoto = async ({ file }) => {
-    if (!photoVehicle) return;
+    if (!file || !photoVehicle) return false;
+
     setUploadingPhoto(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+
+      if (!token) {
+        message.error('Authentication required');
+        return false;
+      }
+
       const res = await fetch(`${API_BASE}/vehicles/${photoVehicle.uid}/photos`, {
         method: 'POST',
         body: formData,
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Upload failed');
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Upload failed');
+      }
+
       const data = await res.json();
       message.success('Photo uploaded');
-      // Update vehicle in local state
-      setVehicles((prev) => prev.map((v) => v.uid === photoVehicle.uid ? { ...v, image_urls: data.image_urls } : v));
+      // Update both main list and modal
+      setVehicles((prev) => prev.map((v) =>
+        v.uid === photoVehicle.uid ? { ...v, image_urls: data.image_urls } : v
+      ));
       setPhotoVehicle((prev) => ({ ...prev, image_urls: data.image_urls }));
-    } catch {
-      message.error('Photo upload failed');
+    } catch (err) {
+      console.error('Upload error:', err);
+      message.error(`Upload failed: ${err.message}`);
     } finally {
       setUploadingPhoto(false);
     }

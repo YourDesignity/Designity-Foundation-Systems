@@ -73,7 +73,9 @@ const InventoryPage = () => {
 
   const fetchContracts = async (projectId) => {
     try {
-      const data = await getContracts(projectId ? { project_id: projectId } : {});
+      const params = { module: 'inventory', page_size: 100 };
+      if (projectId) params.project_id = projectId;
+      const data = await getContracts(params);
       const all = Array.isArray(data) ? data : data?.items || data?.contracts || [];
       setContracts(all);
     } catch {
@@ -119,7 +121,7 @@ const InventoryPage = () => {
       // Upload images if any (best-effort, non-blocking)
       const fileList = values.images?.fileList || [];
       if (newUid && fileList.length > 0) {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
         for (const fileItem of fileList) {
           if (fileItem.originFileObj) {
             const formData = new FormData();

@@ -225,7 +225,7 @@ const AuditTrailPage = () => {
         params.date_to = dateRange[1].toISOString();
       }
       const query = new URLSearchParams(params).toString();
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
       const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
       const url = `${apiBase}/audit-logs/export?${query}`;
       const response = await fetch(url, {
