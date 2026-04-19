@@ -1,11 +1,11 @@
 """
-Phase 5F: Comprehensive Test Data Seed Script
-==============================================
+Database Seed Script
+===========================
 Populates the database with realistic test data covering all Phase 5C (Modules),
 Phase 5D (Workflow), and Phase 5E (Scheduling) features.
 
 Usage:
-    python -m backend.scripts.seed_phase5_data
+    python -m backend.scripts.seed_database
 
 WARNING: NEVER run against a production database!
 """
@@ -44,9 +44,9 @@ from backend.models.vehicles import TripLog
 from backend.models.workflow_history import ApprovalRequest, WorkflowEvent, WorkflowHistory
 from backend.config.permissions import get_role_permissions
 
-# =============================================================================
+# ==========================================================
 # CONFIGURATION
-# =============================================================================
+# ==========================================================
 
 DEFAULT_PASSWORD = "Test@123"
 NUM_ADMINS = 8          # 1 SuperAdmin, 3 Admins, 4 Site Managers
@@ -65,55 +65,55 @@ NUM_CANCELLED = 5
 fake = Faker("en_US")
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# =============================================================================
+# ==========================================================
 # STATIC DATA
-# =============================================================================
+# ==========================================================
 
 ADMINS_SPEC = [
     {
-        "email": "superadmin@phase5.com",
+        "email": "superadmin@designity.com",
         "full_name": "Super Administrator",
         "designation": "Managing Director",
         "role": "SuperAdmin",
     },
     {
-        "email": "alice.morgan@phase5.com",
+        "email": "alice.morgan@designity.com",
         "full_name": "Alice Morgan",
         "designation": "Operations Manager",
         "role": "Admin",
     },
     {
-        "email": "bob.chen@phase5.com",
+        "email": "bob.chen@designity.com",
         "full_name": "Bob Chen",
         "designation": "Project Director",
         "role": "Admin",
     },
     {
-        "email": "carol.hayes@phase5.com",
+        "email": "carol.hayes@designity.com",
         "full_name": "Carol Hayes",
         "designation": "Contract Manager",
         "role": "Admin",
     },
     {
-        "email": "david.park@phase5.com",
+        "email": "david.park@designity.com",
         "full_name": "David Park",
         "designation": "Site Supervisor",
         "role": "Site Manager",
     },
     {
-        "email": "emma.lewis@phase5.com",
+        "email": "emma.lewis@designity.com",
         "full_name": "Emma Lewis",
         "designation": "Site Supervisor",
         "role": "Site Manager",
     },
     {
-        "email": "frank.torres@phase5.com",
+        "email": "frank.torres@designity.com",
         "full_name": "Frank Torres",
         "designation": "Field Manager",
         "role": "Site Manager",
     },
     {
-        "email": "grace.kim@phase5.com",
+        "email": "grace.kim@designity.com",
         "full_name": "Grace Kim",
         "designation": "Site Coordinator",
         "role": "Site Manager",
@@ -205,9 +205,9 @@ MATERIAL_SPECS = [
     ("MSC-002", "Scaffolding Clamp",      "Scaffolding",     "pcs",  500.0, 2.0),
 ]
 
-# =============================================================================
+# ==========================================================
 # UTILITIES
-# =============================================================================
+# ==========================================================
 
 
 def hashed(plain: str) -> str:
@@ -230,9 +230,9 @@ def to_midnight(dt: datetime) -> datetime:
     return dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-# =============================================================================
+# ==========================================================
 # SAFETY CHECK
-# =============================================================================
+# ==========================================================
 
 
 def safety_check() -> bool:
@@ -245,9 +245,9 @@ def safety_check() -> bool:
     return True
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 1: ADMINS
-# =============================================================================
+# ==========================================================
 
 
 async def create_admins() -> List[Admin]:
@@ -274,9 +274,9 @@ async def create_admins() -> List[Admin]:
     return admins
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 2: PROJECTS & CONTRACTS
-# =============================================================================
+# ==========================================================
 
 
 async def create_projects_and_contracts(
@@ -511,9 +511,9 @@ async def create_projects_and_contracts(
     return projects, contracts
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 3: EMPLOYEES
-# =============================================================================
+# ==========================================================
 
 
 async def create_employees(admins: List[Admin]) -> List[Employee]:
@@ -550,9 +550,9 @@ async def create_employees(admins: List[Admin]) -> List[Employee]:
     return employees
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 4: VEHICLES
-# =============================================================================
+# ==========================================================
 
 
 async def create_vehicles() -> List[Vehicle]:
@@ -590,9 +590,9 @@ async def create_vehicles() -> List[Vehicle]:
     return vehicles
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 5: MATERIALS
-# =============================================================================
+# ==========================================================
 
 
 async def create_materials() -> List[Material]:
@@ -618,9 +618,9 @@ async def create_materials() -> List[Material]:
     return materials
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 6: MODULE ASSIGNMENTS
-# =============================================================================
+# ==========================================================
 
 
 async def create_module_assignments(
@@ -750,9 +750,9 @@ async def create_module_assignments(
     return total_emp_assignments, total_material_movements, total_vehicle_trips
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 7: WORKFLOW HISTORY
-# =============================================================================
+# ==========================================================
 
 
 async def create_workflow_history(
@@ -826,9 +826,9 @@ async def create_workflow_history(
     return total
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 8: APPROVAL REQUESTS
-# =============================================================================
+# ==========================================================
 
 
 async def create_approval_requests(
@@ -902,9 +902,9 @@ async def create_approval_requests(
     return total
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 9: SCHEDULED JOBS
-# =============================================================================
+# ==========================================================
 
 
 async def create_scheduled_jobs(contracts: List[LabourContract]) -> int:
@@ -1010,9 +1010,9 @@ async def create_scheduled_jobs(contracts: List[LabourContract]) -> int:
     return total
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 10: NOTIFICATION LOGS
-# =============================================================================
+# ==========================================================
 
 
 async def create_notification_logs(
@@ -1126,9 +1126,9 @@ async def create_notification_logs(
     return total
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 11: RECURRING SCHEDULES
-# =============================================================================
+# ==========================================================
 
 
 async def create_recurring_schedules() -> int:
@@ -1172,9 +1172,9 @@ async def create_recurring_schedules() -> int:
     return len(schedules_spec)
 
 
-# =============================================================================
+# ==========================================================
 # SECTION 12: WORKFLOW EVENTS
-# =============================================================================
+# ==========================================================
 
 
 async def create_workflow_events(contracts: List[LabourContract]) -> int:
@@ -1217,15 +1217,15 @@ async def create_workflow_events(contracts: List[LabourContract]) -> int:
     return total
 
 
-# =============================================================================
+# ==========================================================
 # MAIN ENTRY POINT
-# =============================================================================
+# ==========================================================
 
 
 async def main() -> None:
     start_time = time.time()
     print("=" * 60)
-    print("  Phase 5F: Comprehensive Test Data Seed Script")
+    print("  Database Seed Script")
     print("=" * 60)
 
     if not safety_check():
@@ -1361,13 +1361,13 @@ async def main() -> None:
         for err in errors:
             print(f"   - {err}")
     else:
-        print("✅ Phase 5F seed completed successfully!")
+        print("✅ Seed completed successfully!")
     print(f"⏱  Time: {elapsed:.1f}s")
     print("=" * 60)
     print("\n📋 Default login credentials (password: Test@123)")
-    print("   SuperAdmin : superadmin@phase5.com")
-    print("   Admin      : alice.morgan@phase5.com")
-    print("   Site Mgr   : david.park@phase5.com")
+    print("   SuperAdmin : superadmin@designity.com")
+    print("   Admin      : alice.morgan@designity.com")
+    print("   Site Mgr   : david.park@designity.com")
 
 
 if __name__ == "__main__":

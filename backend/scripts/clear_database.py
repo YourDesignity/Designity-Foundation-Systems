@@ -1,10 +1,10 @@
 """
-Phase 5F: Clear Phase 5 Test Data
-===================================
-Safely removes ALL data created by seed_phase5_data.py.
+Clear Database
+================
+Safely removes ALL data created by seed_database.py.
 
 Usage:
-    python -m backend.scripts.clear_phase5_data
+    python -m backend.scripts.clear_database
 
 WARNING: NEVER run against a production database!
 """
@@ -36,9 +36,9 @@ from backend.models.vehicles import TripLog
 from backend.models.workflow_history import ApprovalRequest, WorkflowEvent, WorkflowHistory
 
 
-# =============================================================================
+# ==========================================================
 # SAFETY CHECK
-# =============================================================================
+# ==========================================================
 
 
 def safety_check() -> bool:
@@ -51,14 +51,14 @@ def safety_check() -> bool:
     return True
 
 
-# =============================================================================
+# ==========================================================
 # CLEAR ALL PHASE 5 DATA
-# =============================================================================
+# ==========================================================
 
 
-async def clear_all_phase5_data() -> None:
+async def clear_all_data() -> None:
     """
-    Clear all Phase 5C / 5D / 5E test data from the database.
+    Clear all test data from the database.
 
     Collections cleared (in dependency order):
     1. Phase 5E scheduling data
@@ -67,7 +67,7 @@ async def clear_all_phase5_data() -> None:
     4. Core entities (contracts, projects, employees, vehicles, materials)
     5. Counter reset
     """
-    print("\n🗑️  Clearing Phase 5 data...\n")
+    print("\n🗑️  Clearing database data...\n")
 
     async def delete_collection(model, label: str) -> None:
         try:
@@ -107,23 +107,23 @@ async def clear_all_phase5_data() -> None:
     # ── Counters ─────────────────────────────────────────────────────────────
     await delete_collection(Counter, "Counter")
 
-    print("\n✅ All Phase 5 data cleared")
+    print("\n✅ All data cleared")
 
 
-# =============================================================================
+# ==========================================================
 # MAIN ENTRY POINT
-# =============================================================================
+# ==========================================================
 
 
 async def main() -> None:
     print("=" * 60)
-    print("  Phase 5F: Clear Phase 5 Test Data")
+    print("  Clear Database")
     print("=" * 60)
 
     if not safety_check():
         sys.exit(1)
 
-    print(f"\n⚠️  This will DELETE all Phase 5 data from: {DB_NAME}")
+    print(f"\n⚠️  This will DELETE all data from: {DB_NAME}")
     print("   Collections: contracts, projects, employees, vehicles, materials,")
     print("                sites, employee_assignments, material_movements,")
     print("                vehicle_trips, workflow_history, approval_requests,")
@@ -142,7 +142,7 @@ async def main() -> None:
         print(f"❌ Database connection failed: {e}")
         sys.exit(1)
 
-    await clear_all_phase5_data()
+    await clear_all_data()
 
 
 if __name__ == "__main__":
