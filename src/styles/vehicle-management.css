@@ -1,0 +1,88 @@
+/* src/assets/styles/vehicle-management.css */
+
+/* --- Page Header --- */
+.vehicle-header {
+  margin-bottom: 24px;
+}
+
+.vehicle-header-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.vehicle-header-icon {
+  background: #1890ff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.vehicle-header h3 {
+  margin: 0 !important;
+}
+
+/* --- Cards --- */
+.vehicle-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.05);
+  border: none; /* Replaces bordered={false} */
+}
+
+.main-content-card {
+  min-height: 600px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+/* --- Table Styles --- */
+.vehicle-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- Sidebar Action Buttons --- */
+.action-btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Force override Ant Design button styles for the large sidebar buttons */
+.action-btn-container .ant-btn-lg {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 20px;
+  height: 45px;
+  font-weight: 500;
+}
+
+.action-btn-container .ant-btn .anticon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* --- Insight List --- */
+.insight-avatar-blue { background-color: #e6f7ff !important; color: #1890ff !important; }
+.insight-avatar-orange { background-color: #fff7e6 !important; color: #faad14 !important; }
+.insight-avatar-red { background-color: #fff1f0 !important; color: #f5222d !important; }
+
+.insight-footer {
+  margin-top: 20px;
+  background: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

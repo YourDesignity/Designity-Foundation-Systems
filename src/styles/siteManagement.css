@@ -1,0 +1,356 @@
+/* src/styles/siteManagement.css */
+
+:root {
+    --primary-color: #4f46e5; /* Indigo */
+    --primary-hover: #4338ca;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-dark: #111827;
+    --text-gray: #6b7280;
+    --border-color: #e5e7eb;
+    --danger-color: #ef4444;
+    --radius: 12px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.site-page-container {
+    padding: 30px;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Header --- */
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    margin: 0 0 5px 0;
+}
+
+.header-icon {
+    color: var(--primary-color);
+}
+
+.page-header p {
+    color: var(--text-gray);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* --- Layout Wrapper --- */
+.site-content-wrapper {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start; /* Crucial for sticky sidebar */
+}
+
+/* --- Left Side: Form Section --- */
+.site-form-section {
+    flex: 0 0 350px; /* Fixed width for form */
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 20px; /* Stays visible when scrolling */
+}
+
+.form-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.error-banner {
+    background-color: #fef2f2;
+    color: var(--danger-color);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    border: 1px solid #fca5a5;
+}
+
+.modern-form .form-group {
+    margin-bottom: 18px;
+}
+
+.modern-form label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.modern-form input, 
+.modern-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.modern-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modern-form input:focus,
+.modern-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.save-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.save-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+/* --- Right Side: List Section --- */
+.site-list-section {
+    flex: 1; /* Takes remaining space */
+}
+
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.list-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.count-badge {
+    background-color: #e0e7ff;
+    color: var(--primary-color);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+}
+
+/* --- Grid Layout --- */
+.site-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* --- Site Card Design --- */
+.site-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.site-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: #d1d5db;
+}
+
+/* Colored decorative strip on left */
+.site-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-color);
+}
+
+.site-card-top {
+    padding: 20px 20px 10px 20px; /* Extra padding for strip */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.site-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.location-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    background-color: #f9fafb;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.delete-icon-btn {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.delete-icon-btn:hover {
+    background-color: #fee2e2;
+    color: var(--danger-color);
+}
+
+.site-card-body {
+    padding: 0 20px 15px 20px;
+    flex-grow: 1;
+}
+
+.site-desc {
+    color: #4b5563;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+    /* Limit to 3 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.site-card-footer {
+    padding: 15px 20px;
+    background-color: #f9fafb;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.text-muted {
+    opacity: 0.6;
+}
+
+/* --- Empty State --- */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: var(--radius);
+    border: 2px dashed var(--border-color);
+    color: var(--text-gray);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 15px;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 900px) {
+    .site-content-wrapper {
+        flex-direction: column;
+    }
+
+    .site-form-section {
+        width: 100%; /* Full width on mobile */
+        flex: none;
+        position: relative; /* Remove sticky on mobile */
+        top: 0;
+    }
+
+    .site-list-section {
+        width: 100%;
+    }
+}
+
+/* Select Dropdown Styling */
+.modern-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: #fff;
+    cursor: pointer;
+    appearance: none; /* Removes default browser arrow */
+    /* Custom arrow */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.65em auto;
+}
+
+.modern-form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Manager Display in Card */
+.manager-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background-color: #f0fdf4; /* Light green bg */
+    border-radius: 6px;
+    color: #166534; /* Dark green text */
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid #bbf7d0;
+}
+
+.manager-icon {
+    font-size: 1.1em;
+}

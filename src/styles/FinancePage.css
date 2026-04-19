@@ -1,0 +1,180 @@
+.finance-container {
+    padding: 24px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.finance-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+/* ── Header row ──────────────────────────────────────────────────────────── */
+.finance-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ── KPI Stat Cards ──────────────────────────────────────────────────────── */
+.fin-stat-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.fin-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.revenue-glow {
+    border-left: 4px solid #52c41a;
+    background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+}
+
+.expense-glow {
+    border-left: 4px solid #ff4d4f;
+    background: linear-gradient(135deg, #fff1f0 0%, #ffccc7 100%);
+}
+
+.profit-glow {
+    border-left: 4px solid #1890ff;
+    background: linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%);
+}
+
+.info-glow {
+    border-left: 4px solid #722ed1;
+    background: linear-gradient(135deg, #f9f0ff 0%, #d3adf7 100%);
+}
+
+.kpi-sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #8c8c8c;
+}
+
+/* ── Trend indicator ─────────────────────────────────────────────────────── */
+.trend-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.trend-up { color: #52c41a; }
+.trend-down { color: #ff4d4f; }
+
+/* ── Chart cards ─────────────────────────────────────────────────────────── */
+.finance-chart-card {
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease;
+}
+
+.finance-chart-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.chart-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #bfbfbf;
+    font-size: 14px;
+}
+
+/* ── Gauge cards ─────────────────────────────────────────────────────────── */
+.gauge-card {
+    text-align: center;
+}
+
+.gauge-label {
+    font-size: 12px;
+    color: #8c8c8c;
+    margin-top: 4px;
+    text-align: center;
+}
+
+/* ── At-risk cards ───────────────────────────────────────────────────────── */
+.at-risk-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.risk-alert-card {
+    border-left: 4px solid #faad14;
+    background: #fffbe6;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.risk-alert-card.high-risk {
+    border-left-color: #ff4d4f;
+    background: #fff1f0;
+}
+
+.risk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.risk-metrics {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+/* ── Efficiency metrics grid ─────────────────────────────────────────────── */
+.eff-metric {
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 8px;
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+}
+
+.eff-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 4px;
+}
+
+/* ── Export button ───────────────────────────────────────────────────────── */
+.export-excel-btn {
+    background: #52c41a !important;
+    border-color: #52c41a !important;
+    box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+}
+
+.export-excel-btn:hover {
+    background: #73d13d !important;
+    border-color: #73d13d !important;
+    transform: translateY(-1px);
+}
+
+/* ── Legacy (kept for backward compat) ───────────────────────────────────── */
+.finance-header { margin-bottom: 30px; }
+.finance-main-card { border-radius: 16px; min-height: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.audit-item { display: flex; align-items: center; gap: 15px; padding: 10px 0; }
+.audit-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+.labor-bg { background: #722ed1; }
+.project-bg { background: #1890ff; }
+.vehicle-bg { background: #fa8c16; }
+.audit-info { flex: 1; }
+.audit-value { font-size: 18px; font-weight: 800; color: #1e293b; }
