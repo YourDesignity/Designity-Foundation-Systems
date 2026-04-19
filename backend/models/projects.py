@@ -228,6 +228,12 @@ class Contract(Document):
     enabled_modules: List[str] = []  # e.g. ["employee", "inventory", "vehicle"]
     module_config: Dict[str, Any] = {}  # Module-specific settings keyed by module name
 
+    # ===== WORKFLOW FIELDS (Phase 5D) =====
+    workflow_state: str = "DRAFT"
+    workflow_metadata: Dict[str, Any] = {}
+    state_changed_at: Optional[datetime] = None
+    state_changed_by: Optional[int] = None
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
