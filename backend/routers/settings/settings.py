@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from backend.security import get_current_active_user
 from backend.services.settings_service import SettingsService
+from backend.utils.audit import audit_update
 from backend.utils.logger import setup_logger
 
 router = APIRouter(
@@ -49,4 +50,19 @@ async def update_company_settings(
     """
     Update company settings. SuperAdmin/Admin only.
     """
-    return await service.update_company_settings(request, current_user)
+    result = await service.update_company_settings(request, current_user)
+
+    # Audit log
+    try:
+        await audit_update(
+            user=current_user,
+            category="settings",
+            entity_type="settings",
+            entity_id="1",
+            entity_name="Company Settings",
+            after=request.model_dump(exclude_none=True),
+        )
+    except Exception:
+        pass
+
+    return result

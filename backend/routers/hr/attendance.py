@@ -6,6 +6,7 @@ from typing import List
 from backend import schemas
 from backend.security import get_current_active_user
 from backend.services.hr.attendance_service import AttendanceService
+from backend.utils.audit import log_audit
 from backend.utils.logger import setup_logger 
 
 router = APIRouter(prefix="/attendance", tags=["Attendance"], dependencies=[Depends(get_current_active_user)])
@@ -34,7 +35,25 @@ async def get_attendance_by_month(year: int, month: int, current_user: dict = De
 @router.post("/update/")
 async def update_attendance(data: schemas.AttendanceUpdateBatch, current_user: dict = Depends(get_current_active_user)):
     try:
-        return await service.sync_attendance_batch(data)
+        result = await service.sync_attendance_batch(data)
+
+        # Audit log
+        try:
+            record_count = len(data.records) if hasattr(data, "records") else 0
+            await log_audit(
+                user=current_user,
+                action="attendance_marked",
+                category="attendance",
+                entity_type="attendance",
+                description=(
+                    f"{current_user.get('name', 'Unknown')} marked attendance "
+                    f"for {record_count} employee(s)"
+                ),
+            )
+        except Exception:
+            pass
+
+        return result
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Update failed")

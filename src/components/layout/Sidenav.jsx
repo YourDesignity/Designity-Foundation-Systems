@@ -17,6 +17,8 @@ import {
   ShopOutlined,
   ShoppingCartOutlined,
   BoxPlotOutlined,
+  AuditOutlined,
+  ContainerOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 import { usePermission } from "../../hooks/usePermission";
@@ -32,6 +34,8 @@ function Sidenav({ color }) {
       { path: "/dashboard", name: "Dashboard", icon: <HomeOutlined />, perm: PERMISSIONS.DASHBOARD_VIEW },
       // My Attendance is shown prominently for Site Managers
       ...(user?.role === 'Site Manager' ? [{ path: "/my-attendance", name: "My Attendance", icon: <ClockCircleOutlined />, perm: PERMISSIONS.MY_ATTENDANCE_VIEW }] : []),
+      // Site Managers get Inventory Tasks link
+      ...(user?.role === 'Site Manager' ? [{ path: "/manager-inventory-tasks", name: "Inventory Tasks", icon: <ContainerOutlined />, perm: PERMISSIONS.INVENTORY_VIEW }] : []),
       { path: "/workforce-allocation", name: "Workforce Alloc.", icon: <UsergroupAddOutlined />, perm: PERMISSIONS.WORKFORCE_VIEW },
       { path: "/analytics", name: "Analytics", icon: <PieChartOutlined />, perm: PERMISSIONS.ANALYTICS_VIEW },
       { path: "/employees", name: "Employees", icon: <UserOutlined />, perm: PERMISSIONS.EMPLOYEES_VIEW },
@@ -65,6 +69,7 @@ function Sidenav({ color }) {
       },
       { path: "/admins", name: "Admins", icon: <SafetyCertificateOutlined />, perm: PERMISSIONS.ADMINS_VIEW },
       { path: "/site-management", name: "Site Mgmt", icon: <GoldOutlined />, perm: PERMISSIONS.SITES_VIEW },
+      { path: "/audit-trail", name: "Audit Trail", icon: <AuditOutlined />, perm: PERMISSIONS.AUDIT_VIEW },
       { path: "/my-profile", name: "My Profile", icon: <ContactsOutlined />, perm: PERMISSIONS.MY_PROFILE_VIEW },
       { path: "/settings", name: "Settings", icon: <SettingOutlined />, perm: PERMISSIONS.SETTINGS_VIEW },
     ];

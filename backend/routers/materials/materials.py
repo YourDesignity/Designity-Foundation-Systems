@@ -197,14 +197,49 @@ async def get_material_movements(material_id: int):
     return await _material_svc.get_material_movements(material_id)
 
 
+@router.get("/contract/{contract_id}/usage")
+async def get_contract_material_usage(
+    contract_id: int,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """
+    Get all material movements (usage) for a contract.
+    Accessible by Admins and Site Managers.
+    """
+    from backend.models.materials import MaterialMovement, Material
+
+    movements = await MaterialMovement.find(
+        MaterialMovement.reference_id == contract_id,
+        MaterialMovement.reference_type == "contract_usage",
+    ).sort(-MaterialMovement.created_at).to_list()
+
+    result = []
+    for m in movements:
+        material = await Material.find_one(Material.uid == m.material_id)
+        result.append({
+            "uid": m.uid,
+            "material_id": m.material_id,
+            "material_name": m.material_name or (material.name if material else f"Material {m.material_id}"),
+            "movement_type": m.movement_type,
+            "quantity": m.quantity,
+            "unit_cost": m.unit_cost,
+            "total_cost": m.total_cost,
+            "notes": m.notes,
+            "performed_by": m.performed_by_admin_id,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        })
+    return result
+
+
 @router.post("/use-on-contract")
 async def use_material_on_contract(
     data: ContractMaterialUsage,
     current_user: dict = Depends(get_current_active_user)
 ):
-    """Record material usage on a contract (OUT movement)."""
-    if current_user.get("role") not in ["SuperAdmin", "Admin"]:
-        raise HTTPException(status_code=403, detail="Only Admins can record material usage")
+    """Record material usage on a contract (OUT movement). Managers can also record usage."""
+    role = current_user.get("role", "")
+    if role not in ["SuperAdmin", "Admin", "Site Manager"]:
+        raise HTTPException(status_code=403, detail="Only Admins and Managers can record material usage")
     return await _material_svc.use_material_on_contract(
         material_id=data.material_id,
         quantity=data.quantity,
