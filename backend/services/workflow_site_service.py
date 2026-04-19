@@ -311,7 +311,11 @@ class WorkflowSiteService(BaseService):
         # Update legacy primary manager field
         if site.assigned_manager_id == manager_id:
             site.assigned_manager_id = site.assigned_manager_ids[0] if site.assigned_manager_ids else None
-            site.assigned_manager_name = site.assigned_manager_names[0] if site.assigned_manager_names else None
+            site.assigned_manager_name = (
+                site.assigned_manager_names[0]
+                if site.assigned_manager_names and len(site.assigned_manager_names) > 0
+                else None
+            )
 
         await site.save()
 

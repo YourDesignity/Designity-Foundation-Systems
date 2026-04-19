@@ -35,12 +35,12 @@ async def migrate_sites() -> None:
         changed = False
 
         # Populate assigned_manager_ids from legacy assigned_manager_id if list is empty
-        if site.assigned_manager_id and site.assigned_manager_id not in site.assigned_manager_ids:
+        if site.assigned_manager_id and not site.assigned_manager_ids:
             site.assigned_manager_ids = [site.assigned_manager_id]
             changed = True
 
         # Populate assigned_manager_names from legacy assigned_manager_name if list is empty
-        if site.assigned_manager_name and site.assigned_manager_name not in site.assigned_manager_names:
+        if site.assigned_manager_name and not site.assigned_manager_names:
             site.assigned_manager_names = [site.assigned_manager_name]
             changed = True
 

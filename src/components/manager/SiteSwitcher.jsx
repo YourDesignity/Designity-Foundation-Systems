@@ -10,12 +10,11 @@ const { Option } = Select;
  * Dropdown selector for managers with multiple sites.
  * Shows site code, name, employee count, and understaffed warnings.
  *
- * @param {number|string} managerId      - The current manager's ID
  * @param {number|string} selectedSiteId - Currently selected site UID
  * @param {Array}         sites          - Array of site summary objects from API
  * @param {Function}      onSiteChange   - Called with the new site UID when selection changes
  */
-const SiteSwitcher = ({ managerId, selectedSiteId, sites = [], onSiteChange }) => {
+const SiteSwitcher = ({ selectedSiteId, sites = [], onSiteChange }) => {
   if (!sites || sites.length <= 1) return null;
 
   return (

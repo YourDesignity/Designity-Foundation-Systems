@@ -301,7 +301,6 @@ function ManagerSiteAttendancePage() {
           {/* Site Switcher — only visible when manager has multiple sites */}
           {sites.length > 1 && (
             <SiteSwitcher
-              managerId={managerId}
               selectedSiteId={selectedSiteId}
               sites={sites}
               onSiteChange={handleSiteChange}
@@ -344,7 +343,7 @@ function ManagerSiteAttendancePage() {
                 <Table
                   columns={columns}
                   dataSource={employees}
-                  rowKey={(r) => r.employee?.uid ?? Math.random()}
+                  rowKey={(r, idx) => r.employee?.uid ?? `row-${idx}`}
                   loading={loadingEmployees}
                   pagination={{ pageSize: 20 }}
                   className="ant-border-space"
