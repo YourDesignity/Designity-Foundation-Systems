@@ -71,12 +71,19 @@ class BaseContract(Document):
     total_role_slots: int = 0
     roles_by_designation: Dict[str, int] = {}
 
-    # ── Module / strategy configuration (Phase 5A) ──────────────────────────
+    # ── Module / strategy configuration (Phase 5A / 5C) ────────────────────
     enabled_modules: List[str] = []      # e.g. ["employee", "inventory"]
+    module_config: Dict[str, Any] = {}   # Per-module settings (Phase 5C)
     salary_strategy: str = "fixed"       # "fixed" | "role_based" | "mixed" | "none"
     cost_strategy: str = "standard"
     invoice_strategy: str = "milestone"
     workflow_config: Dict[str, Any] = {}
+
+    # ── Workflow state (Phase 5D) ────────────────────────────────────────────
+    workflow_state: str = "DRAFT"        # DRAFT | PENDING_APPROVAL | ACTIVE | SUSPENDED | COMPLETED | CANCELLED
+    workflow_metadata: Dict[str, Any] = {}
+    state_changed_at: Optional[datetime] = None
+    state_changed_by: Optional[int] = None
 
     # ── Audit ────────────────────────────────────────────────────────────────
     created_at: datetime = Field(default_factory=datetime.now)
