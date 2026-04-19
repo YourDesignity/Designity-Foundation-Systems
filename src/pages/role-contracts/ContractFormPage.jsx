@@ -26,6 +26,7 @@ import ModuleConfigEditor from '../../components/role-contracts/ModuleConfigEdit
 import {
   getContractById, createContract, updateContract,
 } from '../../services/contractService';
+import { projectService } from '../../services';
 import '../../styles/contract-pages.css';
 
 const { Title, Text } = Typography;
@@ -73,6 +74,25 @@ const ContractFormPage = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [enabledModules, setEnabledModules] = useState([]);
   const [moduleConfigs, setModuleConfigs] = useState({});
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+
+  // Load projects for the project selector
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setProjectsLoading(true);
+    try {
+      const data = await projectService.getAll();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
 
   // Load contract data when editing
   useEffect(() => {
@@ -96,6 +116,7 @@ const ContractFormPage = () => {
         payment_terms: contract.payment_terms,
         notes: contract.notes,
         contract_terms: contract.contract_terms,
+        project_id: contract.project_id,
         date_range: [
           contract.start_date ? dayjs(contract.start_date) : null,
           contract.end_date ? dayjs(contract.end_date) : null,
@@ -129,7 +150,10 @@ const ContractFormPage = () => {
       setSubmitting(true);
 
       const [startDate, endDate] = values.date_range || [];
+      const selectedProject = projects.find((p) => p.uid === values.project_id);
       const payload = {
+        project_id: values.project_id,
+        project_name: selectedProject?.project_name || null,
         contract_code: values.contract_code,
         contract_name: values.contract_name,
         client_name: values.client_name,
@@ -181,6 +205,24 @@ const ContractFormPage = () => {
       ),
       children: (
         <Row gutter={[16, 0]}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="project_id"
+              label="Project"
+              rules={[{ required: true, message: 'Project is required' }]}
+            >
+              <Select
+                showSearch
+                loading={projectsLoading}
+                placeholder="Select a project"
+                optionFilterProp="label"
+                options={projects.map((p) => ({
+                  value: p.uid,
+                  label: `${p.project_code} — ${p.project_name}`,
+                }))}
+              />
+            </Form.Item>
+          </Col>
           <Col xs={24} md={12}>
             <Form.Item
               name="contract_code"
@@ -253,7 +295,7 @@ const ContractFormPage = () => {
         <div>
           <Alert
             type="info"
-            message="Enable modules to track employees, inventory, and vehicles against this contract."
+            title="Enable modules to track employees, inventory, and vehicles against this contract."
             style={{ marginBottom: 16 }}
             showIcon
           />
@@ -281,8 +323,10 @@ const ContractFormPage = () => {
                     <div style={{ marginTop: 12 }}>
                       <Switch
                         checked={isEnabled}
-                        onChange={() => toggleModule(mod.key)}
-                        onClick={(e) => e.stopPropagation()}
+                        onChange={(checked, event) => {
+                          if (event) event.stopPropagation();
+                          toggleModule(mod.key);
+                        }}
                       />
                       <Text style={{ marginLeft: 8, fontSize: 12 }}>
                         {isEnabled ? 'Enabled' : 'Disabled'}
@@ -305,12 +349,12 @@ const ContractFormPage = () => {
           {enabledModules.length === 0 ? (
             <Alert
               type="warning"
-              message="Enable at least one module in the Modules tab to configure settings."
+              title="Enable at least one module in the Modules tab to configure settings."
               showIcon
             />
           ) : (
             <Tabs
-              tabPosition="left"
+              tabPlacement="left"
               items={enabledModules.map((mod) => ({
                 key: mod,
                 label: mod.charAt(0).toUpperCase() + mod.slice(1),

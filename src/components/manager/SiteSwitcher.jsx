@@ -31,7 +31,7 @@ const SiteSwitcher = ({ selectedSiteId, sites = [], onSiteChange }) => {
           value={site.uid}
           label={`${site.site_code || site.uid} - ${site.name}`}
         >
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Text strong>
               {site.site_code || `Site ${site.uid}`} — {site.name}
             </Text>
