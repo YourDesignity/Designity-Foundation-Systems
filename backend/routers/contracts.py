@@ -496,6 +496,297 @@ async def get_contract_scheduled_jobs(
     ]
 
 
+
+# =============================================================================
+# ASSIGNMENT SCHEMAS
+# =============================================================================
+
+
+class EmployeeAssignmentRequest(BaseModel):
+    employee_ids: List[int]
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    role: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class InventoryAssignmentRequest(BaseModel):
+    inventory_ids: List[int]
+    quantity: Optional[float] = 1.0
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class VehicleAssignmentRequest(BaseModel):
+    vehicle_ids: List[int]
+    driver_ids: Optional[List[int]] = []
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    starting_mileage: Optional[float] = None
+    notes: Optional[str] = None
+
+
+# =============================================================================
+# ASSIGNMENT ENDPOINTS
+# =============================================================================
+
+
+@router.post("/{contract_id}/assignments/employee", status_code=status.HTTP_201_CREATED)
+async def assign_employees(
+    contract_id: int,
+    body: EmployeeAssignmentRequest,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Bulk assign employees to a contract."""
+    from backend.database import get_next_uid
+    from backend.models.assignments import EmployeeAssignment
+    from backend.models.hr import Employee
+
+    contract = await _get_contract_or_404(contract_id)
+
+    if "employee" not in (contract.enabled_modules or []):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Employee module is not enabled for this contract.",
+        )
+
+    created = []
+    for emp_id in body.employee_ids:
+        employee = await Employee.find_one(Employee.uid == emp_id)
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee {emp_id} not found.",
+            )
+
+        uid = await get_next_uid("employee_assignments")
+        assignment = EmployeeAssignment(
+            uid=uid,
+            employee_id=emp_id,
+            employee_name=f"{employee.first_name} {employee.last_name}",
+            employee_type=getattr(employee, "employee_type", "Company"),
+            employee_designation=getattr(employee, "designation", None),
+            contract_id=contract_id,
+            project_id=contract.project_id,
+            site_id=0,
+            site_name=contract.project_name or "",
+            assigned_date=datetime.now(),
+            assignment_start=body.start_date or contract.start_date,
+            assignment_end=body.end_date,
+            notes=body.notes,
+            created_by_admin_id=current_user.get("uid"),
+        )
+        await assignment.insert()
+        created.append({"uid": uid, "employee_id": emp_id, "employee_name": assignment.employee_name})
+
+    logger.info(
+        "Assigned %d employees to contract %d by user %s",
+        len(created), contract_id, current_user.get("uid"),
+    )
+    return {"assigned": created, "contract_id": contract_id}
+
+
+@router.post("/{contract_id}/assignments/inventory", status_code=status.HTTP_201_CREATED)
+async def assign_inventory(
+    contract_id: int,
+    body: InventoryAssignmentRequest,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Bulk assign inventory items to a contract."""
+    from backend.database import get_next_uid
+    from backend.models.assignments import InventoryAssignment
+    from backend.models.inventory import InventoryItem
+
+    contract = await _get_contract_or_404(contract_id)
+
+    if "inventory" not in (contract.enabled_modules or []):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inventory module is not enabled for this contract.",
+        )
+
+    created = []
+    for inv_id in body.inventory_ids:
+        item = await InventoryItem.find_one(InventoryItem.uid == inv_id)
+        if not item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Inventory item {inv_id} not found.",
+            )
+
+        uid = await get_next_uid("inventory_assignments")
+        assignment = InventoryAssignment(
+            uid=uid,
+            inventory_id=inv_id,
+            inventory_name=item.name,
+            quantity=body.quantity or 1.0,
+            unit=item.unit,
+            contract_id=contract_id,
+            contract_code=contract.contract_code,
+            project_id=contract.project_id,
+            start_date=body.start_date or contract.start_date,
+            end_date=body.end_date,
+            notes=body.notes,
+            created_by_admin_id=current_user.get("uid"),
+        )
+        await assignment.insert()
+        created.append({"uid": uid, "inventory_id": inv_id, "inventory_name": item.name})
+
+    logger.info(
+        "Assigned %d inventory items to contract %d by user %s",
+        len(created), contract_id, current_user.get("uid"),
+    )
+    return {"assigned": created, "contract_id": contract_id}
+
+
+@router.post("/{contract_id}/assignments/vehicle", status_code=status.HTTP_201_CREATED)
+async def assign_vehicles(
+    contract_id: int,
+    body: VehicleAssignmentRequest,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Bulk assign vehicles to a contract."""
+    from backend.database import get_next_uid
+    from backend.models.assignments import VehicleAssignment
+    from backend.models.vehicles import Vehicle
+
+    contract = await _get_contract_or_404(contract_id)
+
+    if "vehicle" not in (contract.enabled_modules or []):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vehicle module is not enabled for this contract.",
+        )
+
+    created = []
+    for veh_id in body.vehicle_ids:
+        vehicle = await Vehicle.find_one(Vehicle.uid == veh_id)
+        if not vehicle:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Vehicle {veh_id} not found.",
+            )
+
+        uid = await get_next_uid("vehicle_assignments")
+        assignment = VehicleAssignment(
+            uid=uid,
+            vehicle_id=veh_id,
+            vehicle_plate=vehicle.plate,
+            vehicle_model=vehicle.model,
+            driver_ids=body.driver_ids or [],
+            contract_id=contract_id,
+            contract_code=contract.contract_code,
+            project_id=contract.project_id,
+            start_date=body.start_date or contract.start_date,
+            end_date=body.end_date,
+            starting_mileage=body.starting_mileage,
+            notes=body.notes,
+            created_by_admin_id=current_user.get("uid"),
+        )
+        await assignment.insert()
+        created.append({
+            "uid": uid,
+            "vehicle_id": veh_id,
+            "vehicle_plate": vehicle.plate,
+            "vehicle_model": vehicle.model,
+        })
+
+    logger.info(
+        "Assigned %d vehicles to contract %d by user %s",
+        len(created), contract_id, current_user.get("uid"),
+    )
+    return {"assigned": created, "contract_id": contract_id}
+
+
+@router.get("/{contract_id}/assignments/{module_type}", response_model=List[Dict[str, Any]])
+async def get_contract_assignments(
+    contract_id: int,
+    module_type: str,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Get assignments for a contract by module type (employee, inventory, vehicle)."""
+    contract = await _get_contract_or_404(contract_id)
+
+    if module_type not in ("employee", "inventory", "vehicle"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid module type '{module_type}'. Valid: employee, inventory, vehicle",
+        )
+
+    if module_type == "employee":
+        from backend.models.assignments import EmployeeAssignment
+        records = await EmployeeAssignment.find(
+            EmployeeAssignment.contract_id == contract_id
+        ).to_list()
+        return [r.model_dump(mode="json", exclude={"id", "_id", "revision_id"}) for r in records]
+
+    if module_type == "inventory":
+        from backend.models.assignments import InventoryAssignment
+        records = await InventoryAssignment.find(
+            InventoryAssignment.contract_id == contract_id
+        ).to_list()
+        return [r.model_dump(mode="json", exclude={"id", "_id", "revision_id"}) for r in records]
+
+    # vehicle
+    from backend.models.assignments import VehicleAssignment
+    records = await VehicleAssignment.find(
+        VehicleAssignment.contract_id == contract_id
+    ).to_list()
+    return [r.model_dump(mode="json", exclude={"id", "_id", "revision_id"}) for r in records]
+
+
+@router.delete(
+    "/{contract_id}/assignments/{module_type}/{assignment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_contract_assignment(
+    contract_id: int,
+    module_type: str,
+    assignment_id: int,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Delete (remove) a specific assignment from a contract."""
+    await _get_contract_or_404(contract_id)
+
+    if module_type == "employee":
+        from backend.models.assignments import EmployeeAssignment
+        record = await EmployeeAssignment.find_one(
+            EmployeeAssignment.uid == assignment_id,
+            EmployeeAssignment.contract_id == contract_id,
+        )
+    elif module_type == "inventory":
+        from backend.models.assignments import InventoryAssignment
+        record = await InventoryAssignment.find_one(
+            InventoryAssignment.uid == assignment_id,
+            InventoryAssignment.contract_id == contract_id,
+        )
+    elif module_type == "vehicle":
+        from backend.models.assignments import VehicleAssignment
+        record = await VehicleAssignment.find_one(
+            VehicleAssignment.uid == assignment_id,
+            VehicleAssignment.contract_id == contract_id,
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid module type '{module_type}'.",
+        )
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Assignment {assignment_id} not found for contract {contract_id}.",
+        )
+
+    await record.delete()
+    logger.info(
+        "Deleted %s assignment %d from contract %d by user %s",
+        module_type, assignment_id, contract_id, current_user.get("uid"),
+    )
+    return None
+
+
 @router.get("/{contract_id}/activity", response_model=List[Dict[str, Any]])
 async def get_contract_activity(
     contract_id: int,

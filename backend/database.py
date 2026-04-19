@@ -14,6 +14,8 @@ from backend.models import (
     ManagerAttendanceConfig, ManagerAttendance, CompanySettings,
     # NEW: Project Workflow System (Phase 1)
     Project, EmployeeAssignment, TemporaryAssignment,
+    # NEW: Contract Assignments
+    InventoryAssignment, VehicleAssignment,
     # NEW: Material Management
     Material, Supplier, PurchaseOrder, MaterialMovement,
     # NEW: Role-Based Labour Contracts (Phase 1)
@@ -83,6 +85,8 @@ async def init_db():
                 ManagerAttendanceConfig, ManagerAttendance, CompanySettings,
                 # NEW: Project Workflow System (Phase 1)
                 Project, EmployeeAssignment, TemporaryAssignment,
+                # NEW: Contract Assignments
+                InventoryAssignment, VehicleAssignment,
                 # NEW: Material Management
                 Material, Supplier, PurchaseOrder, MaterialMovement,
                 # NEW: Role-Based Labour Contracts (Phase 1)
