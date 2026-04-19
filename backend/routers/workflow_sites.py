@@ -38,6 +38,9 @@ class SiteUpdate(BaseModel):
 class ManagerAssignment(BaseModel):
     manager_id: int
 
+class MultiManagerAssignment(BaseModel):
+    manager_ids: List[int]
+
 class EmployeeAssignRequest(BaseModel):
     employee_ids: List[int]
     assignment_start: str
@@ -135,6 +138,30 @@ async def unassign_manager_from_site(
     """Remove manager assignment from a site."""
     await service.unassign_manager(site_id, current_user)
     logger.info("Manager unassigned from site %s", site_id)
+    return None
+
+
+@router.post("/{site_id}/add-manager")
+async def add_manager_to_site(
+    site_id: int,
+    assignment: ManagerAssignment,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Add an additional manager to a site (multi-manager support)."""
+    result = await service.add_manager(site_id, assignment.manager_id, current_user)
+    logger.info("Manager %s added to site %s", assignment.manager_id, site_id)
+    return result
+
+
+@router.delete("/{site_id}/remove-manager/{manager_id}", status_code=204)
+async def remove_manager_from_site(
+    site_id: int,
+    manager_id: int,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Remove a specific manager from a site's manager list."""
+    await service.remove_manager(site_id, manager_id, current_user)
+    logger.info("Manager %s removed from site %s", manager_id, site_id)
     return None
 
 

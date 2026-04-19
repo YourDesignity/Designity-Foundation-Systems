@@ -32,6 +32,7 @@ const CreateManagerPage = lazy(() => import('./pages/CreateManagerPage'));
 const EditManagerPage = lazy(() => import('./pages/EditManagerPage'));
 const ManagerAttendanceAdminPage = lazy(() => import('./pages/ManagerAttendanceAdminPage'));
 const ManagerMyAttendancePage = lazy(() => import('./pages/ManagerMyAttendancePage'));
+const ManagerSiteAttendancePage = lazy(() => import('./pages/ManagerSiteAttendancePage'));
 const PayslipPage = lazy(() => import('./pages/PayslipPage'));
 const OvertimePage = lazy(() => import('./pages/OvertimePage'));
 const DeductionsPage = lazy(() => import('./pages/DeductionsPage'));
@@ -158,6 +159,7 @@ const App = () => {
               <Route path="managers/edit/:id" element={<EditManagerPage />} />
               <Route path="manager-attendance" element={<ManagerAttendanceAdminPage />} />
               <Route path="my-attendance" element={<ManagerMyAttendancePage />} />
+              <Route path="site-attendance" element={<ManagerSiteAttendancePage />} />
               <Route path="messages" element={<MessagePage />} />
               <Route path="manager-messages" element={<ManagerMessagesPage />} />
               <Route path="settings" element={<CompanySettingsPage />} />

@@ -31,7 +31,9 @@ class ManagerSiteService(BaseService):
         if not manager:
             self.raise_not_found("Manager not found")
 
-        sites = await Site.find(Site.assigned_manager_id == manager_id).to_list()
+        sites = await Site.find(
+            {"$or": [{"assigned_manager_id": manager_id}, {"assigned_manager_ids": manager_id}]}
+        ).to_list()
 
         site_summaries = []
         for site in sites:
@@ -62,7 +64,7 @@ class ManagerSiteService(BaseService):
         if not site:
             self.raise_not_found("Site not found")
 
-        if site.assigned_manager_id != manager_id and current_user.get("role") not in ["SuperAdmin", "Admin"]:
+        if (site.assigned_manager_id != manager_id and manager_id not in site.assigned_manager_ids) and current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("This manager is not assigned to this site")
 
         assignments = await EmployeeAssignment.find(
@@ -103,7 +105,7 @@ class ManagerSiteService(BaseService):
         if not site:
             self.raise_not_found("Site not found")
 
-        if site.assigned_manager_id != manager_id and current_user.get("role") not in ["SuperAdmin", "Admin"]:
+        if (site.assigned_manager_id != manager_id and manager_id not in site.assigned_manager_ids) and current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("This manager is not assigned to this site")
 
         manager = await Admin.find_one(Admin.uid == manager_id)
