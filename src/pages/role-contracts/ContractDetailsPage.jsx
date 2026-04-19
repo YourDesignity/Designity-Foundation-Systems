@@ -348,7 +348,7 @@ const ContractDetailsPage = () => {
               showIcon
             />
           ) : (
-            <Space direction="vertical" style={{ width: '100%' }} size={16}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={16}>
               {enabledModules.includes('employee') && (
                 <Card
                   title={<Space><TeamOutlined /> Employee Assignments</Space>}
