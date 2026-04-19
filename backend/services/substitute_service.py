@@ -280,7 +280,7 @@ class SubstituteService(BaseService):
 
         if current_user.get("role") == "Site Manager":
             me = await Admin.find_one(Admin.email == current_user.get("sub"))
-            if not me or site.assigned_manager_id != me.uid:
+            if not me or (site.assigned_manager_id != me.uid and me.uid not in site.assigned_manager_ids):
                 self.raise_forbidden("Access denied")
         elif current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("Access denied")

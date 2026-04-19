@@ -23,8 +23,12 @@ class Site(Document, MemoryNode):
     project_name: Optional[str] = None  # Denormalized for quick access
     contract_id: Optional[int] = None  # 🔗 Linked to Contract.uid
     contract_code: Optional[str] = None  # Denormalized
-    assigned_manager_id: Optional[int] = None  # 🔗 Linked to Admin.uid (Site Manager)
-    assigned_manager_name: Optional[str] = None  # Denormalized
+    # Multi-manager support: primary single-manager fields kept for backward compat
+    assigned_manager_id: Optional[int] = None  # 🔗 Primary manager (legacy / first in list)
+    assigned_manager_name: Optional[str] = None  # Denormalized primary manager name
+    # New multi-manager list fields
+    assigned_manager_ids: List[int] = []  # All managers assigned to this site
+    assigned_manager_names: List[str] = []  # Denormalized names for all managers
     required_workers: int = 0  # How many workers needed
     assigned_workers: int = 0  # How many currently assigned
     assigned_employee_ids: List[int] = []  # List of Employee.uid assigned to this site
@@ -63,6 +67,7 @@ class Site(Document, MemoryNode):
             "project_id",
             "contract_id",
             "assigned_manager_id",
+            "assigned_manager_ids",
             "status",
         ]
 
@@ -166,7 +171,12 @@ class Project(Document):
         ).to_list()
         self.total_assigned_employees = len(assignments)
 
-        manager_ids = {s.assigned_manager_id for s in sites if s.assigned_manager_id}
+        manager_ids: set[int] = set()
+        for s in sites:
+            if s.assigned_manager_ids:
+                manager_ids.update(s.assigned_manager_ids)
+            elif s.assigned_manager_id:
+                manager_ids.add(s.assigned_manager_id)
         self.total_assigned_managers = len(manager_ids)
 
         self.updated_at = datetime.now()

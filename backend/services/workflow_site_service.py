@@ -89,7 +89,10 @@ class WorkflowSiteService(BaseService):
             me = await Admin.find_one(Admin.email == current_user.get("sub"))
             if not me:
                 self.raise_not_found("Manager profile not found")
-            sites = await Site.find(Site.assigned_manager_id == me.uid).to_list()
+            # Support both single-manager (legacy) and multi-manager fields
+            sites = await Site.find(
+                {"$or": [{"assigned_manager_id": me.uid}, {"assigned_manager_ids": me.uid}]}
+            ).to_list()
 
         elif current_user.get("role") in ["SuperAdmin", "Admin"]:
             filters = []
@@ -118,7 +121,7 @@ class WorkflowSiteService(BaseService):
 
         if current_user.get("role") == "Site Manager":
             me = await Admin.find_one(Admin.email == current_user.get("sub"))
-            if not me or site.assigned_manager_id != me.uid:
+            if not me or (site.assigned_manager_id != me.uid and me.uid not in site.assigned_manager_ids):
                 self.raise_forbidden("Access denied")
         elif current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("Access denied")
@@ -208,6 +211,10 @@ class WorkflowSiteService(BaseService):
 
         site.assigned_manager_id = manager_id
         site.assigned_manager_name = manager.full_name
+        # Maintain multi-manager list: if manager not already in list, add them
+        if manager_id not in site.assigned_manager_ids:
+            site.assigned_manager_ids.append(manager_id)
+            site.assigned_manager_names.append(manager.full_name)
         await site.save()
 
         return {
@@ -230,6 +237,82 @@ class WorkflowSiteService(BaseService):
 
         site.assigned_manager_id = None
         site.assigned_manager_name = None
+        site.assigned_manager_ids = []
+        site.assigned_manager_names = []
+        await site.save()
+
+    async def add_manager(self, site_id: int, manager_id: int, current_user: dict) -> dict:
+        """Add an additional manager to a site (multi-manager support)."""
+        from backend.models import Site, Admin
+
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can assign managers")
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site not found")
+
+        manager = await Admin.find_one(Admin.uid == manager_id)
+        if not manager or manager.role != "Site Manager":
+            self.raise_bad_request("Invalid manager ID: must be an active Site Manager")
+
+        if manager_id in site.assigned_manager_ids:
+            return {
+                "message": "Manager already assigned to this site",
+                "site_id": site_id,
+                "site_name": site.name,
+                "manager_id": manager_id,
+                "manager_name": manager.full_name,
+                "assigned_manager_ids": site.assigned_manager_ids,
+                "assigned_manager_names": site.assigned_manager_names,
+            }
+
+        site.assigned_manager_ids.append(manager_id)
+        site.assigned_manager_names.append(manager.full_name)
+
+        # Keep legacy primary manager in sync (first manager in list)
+        if site.assigned_manager_id is None:
+            site.assigned_manager_id = manager_id
+            site.assigned_manager_name = manager.full_name
+
+        await site.save()
+
+        return {
+            "message": "Manager added successfully",
+            "site_id": site_id,
+            "site_name": site.name,
+            "manager_id": manager_id,
+            "manager_name": manager.full_name,
+            "assigned_manager_ids": site.assigned_manager_ids,
+            "assigned_manager_names": site.assigned_manager_names,
+        }
+
+    async def remove_manager(self, site_id: int, manager_id: int, current_user: dict) -> None:
+        """Remove a specific manager from a site's manager list."""
+        from backend.models import Site
+
+        if current_user.get("role") not in ["SuperAdmin", "Admin"]:
+            self.raise_forbidden("Only Admins can remove managers")
+
+        site = await Site.find_one(Site.uid == site_id)
+        if not site:
+            self.raise_not_found("Site not found")
+
+        if manager_id not in site.assigned_manager_ids and site.assigned_manager_id != manager_id:
+            self.raise_not_found("Manager is not assigned to this site")
+
+        # Remove from list
+        if manager_id in site.assigned_manager_ids:
+            idx = site.assigned_manager_ids.index(manager_id)
+            site.assigned_manager_ids.pop(idx)
+            if idx < len(site.assigned_manager_names):
+                site.assigned_manager_names.pop(idx)
+
+        # Update legacy primary manager field
+        if site.assigned_manager_id == manager_id:
+            site.assigned_manager_id = site.assigned_manager_ids[0] if site.assigned_manager_ids else None
+            site.assigned_manager_name = site.assigned_manager_names[0] if site.assigned_manager_names else None
+
         await site.save()
 
     async def get_site_employees(self, site_id: int, current_user: dict) -> dict:
@@ -241,7 +324,7 @@ class WorkflowSiteService(BaseService):
 
         if current_user.get("role") == "Site Manager":
             me = await Admin.find_one(Admin.email == current_user.get("sub"))
-            if not me or site.assigned_manager_id != me.uid:
+            if not me or (site.assigned_manager_id != me.uid and me.uid not in site.assigned_manager_ids):
                 self.raise_forbidden("Access denied")
         elif current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("Access denied")
@@ -405,7 +488,7 @@ class WorkflowSiteService(BaseService):
 
         if current_user.get("role") == "Site Manager":
             me = await Admin.find_one(Admin.email == current_user.get("sub"))
-            if not me or site.assigned_manager_id != me.uid:
+            if not me or (site.assigned_manager_id != me.uid and me.uid not in site.assigned_manager_ids):
                 self.raise_forbidden("Access denied")
         elif current_user.get("role") not in ["SuperAdmin", "Admin"]:
             self.raise_forbidden("Access denied")

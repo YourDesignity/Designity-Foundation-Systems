@@ -1,6 +1,7 @@
 export { default as adminService } from './admin/adminService';
 export { default as managerService } from './admin/managerService';
 export { default as managerAttendanceService } from './admin/managerAttendanceService';
+export { default as managerSiteService } from './admin/managerSiteService';
 
 export { default as employeeService } from './hr/employeeService';
 export { default as attendanceService } from './hr/attendanceService';
