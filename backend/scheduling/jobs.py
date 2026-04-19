@@ -36,7 +36,7 @@ class JobExecutor:
     # ------------------------------------------------------------------
 
     @staticmethod
-    async def execute_contract_activation(contract_id: int, payload: Dict[str, Any] = {}) -> Dict[str, Any]:
+    async def execute_contract_activation(contract_id: int, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Activate a contract on its start_date.
 
@@ -76,7 +76,7 @@ class JobExecutor:
     async def execute_expiry_warning(
         contract_id: int,
         days_remaining: int,
-        payload: Dict[str, Any] = {},
+        payload: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Send expiry warning notifications for a contract approaching its end_date.
@@ -97,7 +97,7 @@ class JobExecutor:
         return {"success": True, "contract_id": contract_id, "days_remaining": days_remaining}
 
     @staticmethod
-    async def execute_auto_completion(contract_id: int, payload: Dict[str, Any] = {}) -> Dict[str, Any]:
+    async def execute_auto_completion(contract_id: int, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Auto-complete a contract that has reached its end_date.
         """
@@ -132,7 +132,7 @@ class JobExecutor:
         contract_id: int,
         month: int,
         year: int,
-        payload: Dict[str, Any] = {},
+        payload: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Run calculate_cost on every enabled module for *contract_id* and store
@@ -185,7 +185,7 @@ class JobExecutor:
     # ------------------------------------------------------------------
 
     @staticmethod
-    async def execute_renewal_request(contract_id: int, payload: Dict[str, Any] = {}) -> Dict[str, Any]:
+    async def execute_renewal_request(contract_id: int, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Initiate a renewal workflow for a contract approaching expiry.
 
@@ -215,7 +215,7 @@ class JobExecutor:
         }
 
     @staticmethod
-    async def execute_payment_reminder(contract_id: int, payload: Dict[str, Any] = {}) -> Dict[str, Any]:
+    async def execute_payment_reminder(contract_id: int, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Send a payment reminder to billing contacts for *contract_id*.
         """

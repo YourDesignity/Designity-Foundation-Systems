@@ -15,8 +15,11 @@ Usage (from main.py lifespan or a standalone script):
 from __future__ import annotations
 
 import asyncio
+import logging
 
 from backend.scheduling.engine import SchedulingEngine
+
+logger = logging.getLogger(__name__)
 
 
 class SchedulingWorker:
@@ -45,14 +48,17 @@ class SchedulingWorker:
             try:
                 summary = await SchedulingEngine.process_due_jobs()
                 if summary.get("executed", 0) > 0:
-                    print(
-                        f"[SchedulingWorker] Processed {summary['executed']} job(s) — "
-                        f"succeeded={summary['succeeded']} failed={summary['failed']} "
-                        f"retried={summary.get('retried', 0)}"
+                    logger.info(
+                        "SchedulingWorker: processed %d job(s) — "
+                        "succeeded=%d failed=%d retried=%d",
+                        summary["executed"],
+                        summary["succeeded"],
+                        summary["failed"],
+                        summary.get("retried", 0),
                     )
             except Exception as exc:  # noqa: BLE001
                 # Log error but keep the worker alive
-                print(f"[SchedulingWorker] Error during job processing: {exc}")
+                logger.error("SchedulingWorker: error during job processing: %s", exc, exc_info=True)
 
             await asyncio.sleep(self.interval_seconds)
 
