@@ -1,0 +1,25 @@
+{
+  "roles": {
+    "super_admin": {
+      "legacy_id": 1,
+      "db_name": "SuperAdmin",
+      "permissions": ["all"]
+    },
+    "admin": {
+      "legacy_id": 2,
+      "db_name": "Admin",
+      "permissions": [
+        "employee:view_all", "employee:create", "employee:edit", "employee:delete",
+        "attendance:update", "site:create", "site:view"
+      ]
+    },
+    "site_manager": {
+      "legacy_id": 3,
+      "db_name": "Site Manager",
+      "permissions": [
+        "employee:view_assigned", "attendance:update", 
+        "site:view", "schedule:edit"
+      ]
+    }
+  }
+}
