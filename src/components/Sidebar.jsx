@@ -21,6 +21,10 @@ import {
   LuChartPie,
   LuChartBarBig,
   LuUsersRound,
+  LuFileText,
+  LuFilePlus,
+  LuSquareCheck,
+  LuSlidersHorizontal,
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import NavSection from './Sidebar/NavSection';
@@ -91,6 +95,20 @@ const Sidebar = () => {
             <NavItem to="/project-workflow" icon={LuGitBranch} label="Workflow" />
             <NavItem to="/project-workflow/overview" icon={LuGitBranch} label="Workflow Overview" />
             <NavItem to="/role-contracts/fulfillment" icon={LuClipboardList} label="Role Contracts" />
+          </NavSection>
+        )}
+
+        {/* CONTRACTS Section */}
+        {hasPerm('employee:view_all') && (
+          <NavSection title="CONTRACTS" icon={LuFileText} defaultOpen={false}>
+            <NavItem to="/contracts" icon={LuFileText} label="All Contracts" />
+            {hasPerm('admin:view_all') && (
+              <NavItem to="/contracts/new" icon={LuFilePlus} label="Create Contract" />
+            )}
+            <NavItem to="/contracts?status=PENDING_APPROVAL" icon={LuSquareCheck} label="Pending Approvals" />
+            {hasPerm('admin:view_all') && (
+              <NavItem to="/contracts/modules/settings" icon={LuSlidersHorizontal} label="Module Settings" />
+            )}
           </NavSection>
         )}
 
