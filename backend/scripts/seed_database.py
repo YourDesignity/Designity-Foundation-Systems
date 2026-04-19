@@ -637,6 +637,7 @@ async def create_module_assignments(
     print("\n📋 Creating module assignments...")
     super_admin = next((a for a in admins if a.role == "SuperAdmin"), admins[0])
     active_employees = [e for e in employees if e.status == "Active"]
+    site_managers = [a for a in admins if a.role == "Site Manager"]
 
     total_emp_assignments = 0
     total_material_movements = 0
@@ -654,8 +655,10 @@ async def create_module_assignments(
             n_assign = random.randint(3, min(max_emp, len(active_employees)))
             assigned_emps = random.sample(active_employees, n_assign)
 
-            # Create a minimal contract site
+            # Create a minimal contract site, randomly assign 1-2 managers
             site_uid = await get_next_uid("sites")
+            num_managers = random.choice([1, 1, 1, 2]) if site_managers else 0  # 75% single, 25% dual
+            selected_managers = random.sample(site_managers, min(num_managers, len(site_managers))) if site_managers else []
             site = Site(
                 uid=site_uid,
                 name=f"Site for {contract.contract_code}",
@@ -668,6 +671,10 @@ async def create_module_assignments(
                 required_workers=n_assign,
                 assigned_workers=n_assign,
                 assigned_employee_ids=[e.uid for e in assigned_emps],
+                assigned_manager_ids=[m.uid for m in selected_managers],
+                assigned_manager_names=[m.full_name for m in selected_managers],
+                assigned_manager_id=selected_managers[0].uid if selected_managers else None,
+                assigned_manager_name=selected_managers[0].full_name if selected_managers else None,
                 start_date=contract.start_date,
             )
             await site.insert()

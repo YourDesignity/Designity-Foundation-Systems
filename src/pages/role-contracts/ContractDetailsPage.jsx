@@ -210,7 +210,7 @@ const ContractDetailsPage = () => {
   if (!contract) {
     return (
       <div className="contract-page">
-        <Alert type="error" message="Contract not found or could not be loaded." showIcon />
+        <Alert type="error" title="Contract not found or could not be loaded." showIcon />
       </div>
     );
   }
@@ -313,7 +313,7 @@ const ContractDetailsPage = () => {
             <Empty description="No modules enabled for this contract" />
           ) : (
             <Tabs
-              tabPosition="left"
+              tabPlacement="left"
               items={enabledModules.map((mod) => ({
                 key: mod,
                 label: mod.charAt(0).toUpperCase() + mod.slice(1),

@@ -205,7 +205,7 @@ function ManagerSiteAttendancePage() {
       dataIndex: ['employee', 'name'],
       key: 'name',
       render: (name, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong>{name}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
             {record.employee?.designation}
@@ -249,7 +249,7 @@ function ManagerSiteAttendancePage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   if (!managerId) {
-    return <Alert type="warning" message="Manager identity not found. Please log in again." />;
+    return <Alert type="warning" title="Manager identity not found. Please log in again." />;
   }
 
   return (
@@ -286,7 +286,7 @@ function ManagerSiteAttendancePage() {
 
       {/* Error loading sites */}
       {sitesError && (
-        <Alert type="error" message={sitesError} style={{ marginBottom: 16 }} />
+        <Alert type="error" title={sitesError} style={{ marginBottom: 16 }} />
       )}
 
       {/* Loading sites spinner */}
