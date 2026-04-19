@@ -3,6 +3,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ContractProvider } from './context/ContractContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -64,6 +65,13 @@ const DailyFulfillmentRecord = lazy(() => import('./pages/role-contracts/DailyFu
 const MonthlyReportDashboard = lazy(() => import('./pages/role-contracts/MonthlyReportDashboard'));
 const SlotManagement = lazy(() => import('./pages/role-contracts/SlotManagement'));
 
+// --- Modular Contract Workflow pages (Phase 6) ---
+const ContractListPage = lazy(() => import('./pages/role-contracts/ContractListPage'));
+const ContractFormPage = lazy(() => import('./pages/role-contracts/ContractFormPage'));
+const ModularContractDetailsPage = lazy(() => import('./pages/role-contracts/ContractDetailsPage'));
+const ContractSchedulePage = lazy(() => import('./pages/role-contracts/ContractSchedulePage'));
+const ModuleSettingsPage = lazy(() => import('./pages/role-contracts/ModuleSettingsPage'));
+
 // --- Document Management & Inventory ---
 const EmployeeDocuments = lazy(() => import('./pages/Employees/EmployeeDocuments'));
 const MaterialsList = lazy(() => import('./pages/Inventory/MaterialsList'));
@@ -78,6 +86,7 @@ import "./assets/styles/responsive.css";
 const App = () => {
   return (
     <AuthProvider>
+      <ContractProvider>
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -130,6 +139,14 @@ const App = () => {
               <Route path="role-contracts/record-daily" element={<DailyFulfillmentRecord />} />
               <Route path="role-contracts/monthly-report" element={<MonthlyReportDashboard />} />
               <Route path="role-contracts/manage-slots" element={<SlotManagement />} />
+
+              {/* Modular Contract Workflow System (Phase 6) */}
+              <Route path="contracts" element={<ContractListPage />} />
+              <Route path="contracts/new" element={<ContractFormPage />} />
+              <Route path="contracts/modules/settings" element={<ModuleSettingsPage />} />
+              <Route path="contracts/:id" element={<ModularContractDetailsPage />} />
+              <Route path="contracts/:id/edit" element={<ContractFormPage />} />
+              <Route path="contracts/:id/schedule" element={<ContractSchedulePage />} />
               
               {/* Financial */}
               <Route path="finance" element={<FinancePage />} />
@@ -168,6 +185,7 @@ const App = () => {
           theme="light"
         />
       </ErrorBoundary>
+      </ContractProvider>
     </AuthProvider>
   );
 };

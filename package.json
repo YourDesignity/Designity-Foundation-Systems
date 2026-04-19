@@ -17,6 +17,7 @@
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
     "antd": "^6.1.0",
+    "apexcharts": "^5.10.6",
     "axios": "^1.13.2",
     "dayjs": "^1.11.20",
     "exceljs": "^4.4.0",
