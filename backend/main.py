@@ -56,6 +56,7 @@ from backend.routers.settings import settings_router
 from backend.routers.materials import materials_router, suppliers_router, purchase_orders_router
 from backend.routers.role_contracts import contract_roles_router, daily_fulfillment_router
 from backend.routers.payroll import payroll_router
+from backend.routers.contracts import router as contracts_api_router
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -355,6 +356,8 @@ app.include_router(contract_roles_router)
 app.include_router(daily_fulfillment_router)
 # NEW: Configurable Payroll Engine (Phase 5B)
 app.include_router(payroll_router)
+# NEW: Contracts API (LabourContract CRUD at /api/contracts)
+app.include_router(contracts_api_router)
 
 @app.get("/", tags=["Root"])
 def read_root():
