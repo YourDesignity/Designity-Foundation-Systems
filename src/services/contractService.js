@@ -162,7 +162,7 @@ export const transitionWorkflow = (contractId, action, data = {}) =>
  * @param {string|number} contractId
  */
 export const getApprovalHistory = (contractId) =>
-  apiClient.get(`${BASE}/${contractId}/workflow/history`);
+  apiClient.get(`${BASE}/${contractId}/history`);
 
 /**
  * Approve a contract.

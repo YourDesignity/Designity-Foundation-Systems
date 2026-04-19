@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from backend.models.contracts import LabourContract
 from backend.models.workflow_history import WorkflowHistory
 from backend.security import get_current_active_user
+from backend.utils.audit import audit_create, audit_update, audit_delete, log_audit
 from backend.utils.logger import setup_logger
 from backend.workflows.engine import WorkflowEngine
 from backend.workflows.states import ContractState
@@ -195,6 +196,19 @@ async def create_contract(
     )
     await contract.insert()
 
+    # Audit log
+    try:
+        await audit_create(
+            user=current_user,
+            category="contracts",
+            entity_type="contract",
+            entity_id=str(uid),
+            entity_name=contract_code,
+            data={"contract_code": contract_code, "project_id": body.project_id},
+        )
+    except Exception:
+        pass
+
     logger.info("Contract %s created by user %s", contract_code, current_user.get("uid"))
     return _serialize_contract(contract)
 
@@ -224,6 +238,19 @@ async def update_contract(
     contract.updated_at = datetime.now()
     await contract.save()
 
+    # Audit log
+    try:
+        await audit_update(
+            user=current_user,
+            category="contracts",
+            entity_type="contract",
+            entity_id=str(contract_id),
+            entity_name=contract.contract_code,
+            after=update_data,
+        )
+    except Exception:
+        pass
+
     logger.info("Contract %d updated by user %s", contract_id, current_user.get("uid"))
     return _serialize_contract(contract)
 
@@ -243,8 +270,112 @@ async def delete_contract(
         )
 
     await contract.delete()
+
+    # Audit log
+    try:
+        await audit_delete(
+            user=current_user,
+            category="contracts",
+            entity_type="contract",
+            entity_id=str(contract_id),
+            entity_name=contract.contract_code,
+        )
+    except Exception:
+        pass
+
     logger.info("Contract %d deleted by user %s", contract_id, current_user.get("uid"))
     return None
+
+
+# Mapping from action name to target ContractState
+_ACTION_TO_STATE: Dict[str, str] = {
+    "submit": ContractState.PENDING_APPROVAL,
+    "approve": ContractState.ACTIVE,
+    "reject": ContractState.DRAFT,
+    "activate": ContractState.ACTIVE,
+    "complete": ContractState.COMPLETED,
+    "cancel": ContractState.CANCELLED,
+    "suspend": ContractState.SUSPENDED,
+}
+
+
+@router.get("/{contract_id}/workflow/", response_model=Dict[str, Any])
+async def get_workflow_state(
+    contract_id: int,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Return the current workflow state for a contract."""
+    contract = await _get_contract_or_404(contract_id)
+    return {
+        "workflow_state": contract.workflow_state,
+        "state_changed_at": (
+            contract.updated_at.isoformat() if contract.updated_at else None
+        ),
+    }
+
+
+@router.post("/{contract_id}/workflow/{action}", response_model=Dict[str, Any])
+async def perform_workflow_action(
+    contract_id: int,
+    action: str,
+    body: Optional[WorkflowTransitionRequest] = None,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """
+    Perform a named workflow action on a contract.
+
+    Supported actions: submit, approve, reject, activate, complete, cancel, suspend.
+    """
+    target_state = _ACTION_TO_STATE.get(action)
+    if target_state is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown action '{action}'. Valid actions: {list(_ACTION_TO_STATE.keys())}",
+        )
+
+    contract = await _get_contract_or_404(contract_id)
+    reason = (body.reason if body else None) or action
+
+    result = await WorkflowEngine.transition(
+        contract=contract,
+        target_state=target_state,
+        changed_by=current_user.get("uid"),
+        reason=reason,
+    )
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result.get("error", "Workflow transition failed"),
+        )
+
+    # Audit log
+    try:
+        await log_audit(
+            user=current_user,
+            action=f"contract_{action}",
+            category="contracts",
+            entity_type="contract",
+            entity_id=str(contract_id),
+            entity_name=contract.contract_code,
+            description=(
+                f"{current_user.get('name', 'Unknown')} performed '{action}' on "
+                f"contract '{contract.contract_code}'"
+            ),
+            before_data={"workflow_state": result.get("from_state")},
+            after_data={"workflow_state": result.get("to_state")},
+        )
+    except Exception:
+        pass
+
+    logger.info(
+        "Contract %d: action '%s' by user %s → %s",
+        contract_id,
+        action,
+        current_user.get("uid"),
+        result.get("to_state"),
+    )
+    return {"contract": _serialize_contract(contract), "transition": result}
 
 
 @router.patch("/{contract_id}/workflow", response_model=Dict[str, Any])
@@ -277,6 +408,26 @@ async def change_workflow_state(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=result.get("error", "Workflow transition failed"),
         )
+
+    # Audit log
+    try:
+        await log_audit(
+            user=current_user,
+            action="contract_workflow_transition",
+            category="contracts",
+            entity_type="contract",
+            entity_id=str(contract_id),
+            entity_name=contract.contract_code,
+            description=(
+                f"{current_user.get('name', 'Unknown')} transitioned contract "
+                f"'{contract.contract_code}' from {result.get('from_state')} "
+                f"to {result.get('to_state')}"
+            ),
+            before_data={"workflow_state": result.get("from_state")},
+            after_data={"workflow_state": result.get("to_state"), "reason": body.reason},
+        )
+    except Exception:
+        pass
 
     logger.info(
         "Contract %d transitioned %s → %s by user %s",
@@ -311,3 +462,91 @@ async def get_contract_history(
         }
         for h in history
     ]
+
+
+@router.get("/{contract_id}/schedule/", response_model=List[Dict[str, Any]])
+async def get_contract_scheduled_jobs(
+    contract_id: int,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """Return scheduled automation jobs for a contract."""
+    from backend.models.schedules import ScheduledJob
+
+    jobs = (
+        await ScheduledJob.find(
+            ScheduledJob.target_type == "contract",
+            ScheduledJob.target_id == contract_id,
+        )
+        .sort(-ScheduledJob.scheduled_for)
+        .to_list()
+    )
+
+    return [
+        {
+            "uid": str(job.id),
+            "job_type": job.job_type,
+            "status": job.status,
+            "scheduled_for": job.scheduled_for.isoformat() if job.scheduled_for else None,
+            "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+            "retry_count": job.retry_count,
+            "last_error": job.last_error,
+            "payload": job.payload,
+        }
+        for job in jobs
+    ]
+
+
+@router.get("/{contract_id}/activity", response_model=List[Dict[str, Any]])
+async def get_contract_activity(
+    contract_id: int,
+    current_user: dict = Depends(get_current_active_user),
+):
+    """
+    Return the combined activity log for a contract.
+
+    Aggregates workflow history events and audit log entries for this contract
+    so the frontend can display a unified timeline.
+    """
+    from backend.models.audit_log import AuditLog
+
+    history = (
+        await WorkflowHistory.find(WorkflowHistory.contract_id == contract_id)
+        .sort(-WorkflowHistory.timestamp)
+        .to_list()
+    )
+
+    audit_entries = (
+        await AuditLog.find(
+            AuditLog.entity_type == "contract",
+            AuditLog.entity_id == str(contract_id),
+        )
+        .sort(-AuditLog.timestamp)
+        .to_list()
+    )
+
+    activities: List[Dict[str, Any]] = []
+
+    for h in history:
+        activities.append(
+            {
+                "type": "workflow_transition",
+                "user": h.changed_by,
+                "message": f"State changed from {h.from_state} to {h.to_state}",
+                "reason": h.reason,
+                "timestamp": h.timestamp.isoformat() if h.timestamp else None,
+            }
+        )
+
+    for entry in audit_entries:
+        activities.append(
+            {
+                "type": entry.action,
+                "user": entry.user_name,
+                "message": entry.description,
+                "timestamp": entry.timestamp.isoformat() if entry.timestamp else None,
+            }
+        )
+
+    # Sort combined list by timestamp descending
+    activities.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
+    return activities

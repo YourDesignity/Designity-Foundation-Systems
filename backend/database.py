@@ -41,6 +41,8 @@ from backend.models.schedules import (
 )
 # Module settings (singleton)
 from backend.models.module_settings import GlobalModuleSettings
+# Audit trail
+from backend.models.audit_log import AuditLog
 
 # Load Environment Variables
 env_path = Path("./backend/.env") 
@@ -100,6 +102,8 @@ async def init_db():
                 RecurringSchedule,
                 # Module settings (singleton)
                 GlobalModuleSettings,
+                # Audit trail
+                AuditLog,
             ]
         )
         print(f"✅ Connected to MongoDB at {DB_NAME}")

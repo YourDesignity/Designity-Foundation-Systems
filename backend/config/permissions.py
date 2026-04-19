@@ -92,6 +92,9 @@ ALL_PERMISSIONS = {
     "my-profile:edit",
     "my-attendance:view",
     "my-attendance:edit",
+
+    # Audit Trail (Admin/SuperAdmin only)
+    "audit:view",
 }
 
 # ─── ROLE PERMISSION MAPPINGS ─────────────────────────────────────────────────
@@ -172,6 +175,9 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         # Settings (limited)
         "settings:view",
 
+        # Audit Trail
+        "audit:view",
+
         # Profile
         "my-profile:view",
         "my-profile:edit",
@@ -201,6 +207,9 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
 
         # Their assigned site
         "sites:view",
+
+        # Inventory tasks (view materials, record usage for their contracts)
+        "inventory:view",
     ],
 }
 

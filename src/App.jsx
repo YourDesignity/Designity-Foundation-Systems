@@ -79,6 +79,12 @@ const MaterialsList = lazy(() => import('./pages/Inventory/MaterialsList'));
 const SuppliersList = lazy(() => import('./pages/Inventory/SuppliersList'));
 const PurchaseOrders = lazy(() => import('./pages/Inventory/PurchaseOrders'));
 
+// --- Audit Trail ---
+const AuditTrailPage = lazy(() => import('./pages/AuditTrailPage'));
+
+// --- Manager Inventory Tasks ---
+const ManagerInventoryTasksPage = lazy(() => import('./pages/ManagerInventoryTasksPage'));
+
 // --- Styles ---
 import "antd/dist/reset.css"; 
 import "./assets/styles/main.css";
@@ -164,6 +170,10 @@ const App = () => {
               <Route path="manager-messages" element={<ManagerMessagesPage />} />
               <Route path="settings" element={<CompanySettingsPage />} />
               <Route path="my-profile" element={<MyProfile />} />
+              {/* Audit Trail - Admin only */}
+              <Route path="audit-trail" element={<AuditTrailPage />} />
+              {/* Manager Inventory Tasks */}
+              <Route path="manager-inventory-tasks" element={<ManagerInventoryTasksPage />} />
 
               {/* Overview Dashboard (project workflow analytics) */}
               <Route path="overview" element={<Dashboard />} />

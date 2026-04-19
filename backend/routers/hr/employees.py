@@ -8,6 +8,7 @@ from backend import schemas
 from backend.security import get_current_active_user
 from backend.services.hr.employee_service import EmployeeService
 from backend.utils.logger import setup_logger
+from backend.utils.audit import audit_create, audit_update, audit_delete
 
 try:
     from backend.websocket_manager import manager
@@ -111,6 +112,19 @@ async def create_employee(
         emp_dict = schemas.EmployeeFull.model_validate(new_employee).model_dump(mode='json')
         await manager.broadcast(json.dumps({"type": "employee_update", "data": emp_dict}))
 
+        # Audit log
+        try:
+            await audit_create(
+                user=current_user,
+                category="employees",
+                entity_type="employee",
+                entity_id=str(new_employee.uid),
+                entity_name=new_employee.name,
+                data={"name": new_employee.name, "designation": new_employee.designation},
+            )
+        except Exception:
+            pass
+
         return new_employee
 
     except HTTPException:
@@ -140,6 +154,19 @@ async def update_employee(
     emp_dict = schemas.EmployeeFull.model_validate(emp).model_dump(mode='json')
     await manager.broadcast(json.dumps({"type": "employee_update", "data": emp_dict}))
 
+    # Audit log
+    try:
+        await audit_update(
+            user=current_user,
+            category="employees",
+            entity_type="employee",
+            entity_id=str(employee_id),
+            entity_name=emp.name,
+            after=data,
+        )
+    except Exception:
+        pass
+
     return emp
 
 # =============================================================================
@@ -153,6 +180,17 @@ async def delete_employee(employee_id: int, current_user: dict = Depends(get_cur
     await _service.delete_employee(employee_id)
 
     await manager.broadcast(json.dumps({"type": "employee_delete", "id": employee_id}))
+
+    # Audit log
+    try:
+        await audit_delete(
+            user=current_user,
+            category="employees",
+            entity_type="employee",
+            entity_id=str(employee_id),
+        )
+    except Exception:
+        pass
 
     return None
 

@@ -1,7 +1,7 @@
 """Vehicle management models."""
 
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 
 from beanie import Document, Indexed
 
@@ -17,6 +17,8 @@ class Vehicle(Document, MemoryNode):
     registration_expiry: Optional[str] = None
     insurance_expiry: Optional[str] = None
     pollution_expiry: Optional[str] = None
+    # Pictures
+    image_urls: List[str] = []
 
     class Settings:
         name = "vehicles"
@@ -26,6 +28,8 @@ class TripLog(Document, MemoryNode):
     vehicle_uid: int
     vehicle_plate: Optional[str] = None
     driver_name: str
+    # Employee who drove the vehicle
+    driver_employee_uid: Optional[int] = None
     out_time: Optional[datetime] = None
     in_time: Optional[datetime] = None
     purpose: str
@@ -34,6 +38,11 @@ class TripLog(Document, MemoryNode):
     end_mileage: float = 0.0
     start_condition: str = "Good"
     end_condition: Optional[str] = None
+    # Contract / Site association
+    contract_id: Optional[int] = None
+    contract_code: Optional[str] = None
+    site_id: Optional[int] = None
+    site_name: Optional[str] = None
 
     class Settings:
         name = "vehicle_trips"

@@ -1,6 +1,6 @@
 """Inventory models."""
 
-from typing import Optional
+from typing import List, Optional
 
 from beanie import Document
 
@@ -15,6 +15,8 @@ class InventoryItem(Document, MemoryNode):
     price: float
     supplier: Optional[str] = None
     status: str = "In Stock"
+    # Sample pictures of the material/item
+    image_urls: List[str] = []
 
     class Settings:
         name = "inventory_items"

@@ -58,6 +58,7 @@ from backend.routers.role_contracts import contract_roles_router, daily_fulfillm
 from backend.routers.payroll import payroll_router
 from backend.routers.contracts import router as contracts_api_router
 from backend.routers.modules import router as modules_router
+from backend.routers.audit import router as audit_router
 
 # --- Initialize Logger ---
 logger = setup_logger("MainApp", log_file="logs/app_main.log", level=logging.DEBUG)
@@ -135,6 +136,8 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # --- UPLOADS (profile photos, documents, etc.) ---
 uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(os.path.join(uploads_dir, "admin_photos"), exist_ok=True)
+os.makedirs(os.path.join(uploads_dir, "vehicle_photos"), exist_ok=True)
+os.makedirs(os.path.join(uploads_dir, "inventory_photos"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 # --- Password Hashing ---
@@ -361,6 +364,8 @@ app.include_router(payroll_router)
 app.include_router(contracts_api_router)
 # NEW: Module Settings API (/api/modules/settings)
 app.include_router(modules_router)
+# NEW: Audit Trail API (/audit-logs)
+app.include_router(audit_router)
 
 @app.get("/", tags=["Root"])
 def read_root():

@@ -6,12 +6,12 @@ import {
     Card, Table, Button, Tag, Space, Modal, Form, Input,
     InputNumber, Select, message, Popconfirm, Typography,
     Row, Col, Statistic, Tabs, Descriptions, Empty,
-    Drawer,
+    Drawer, Upload, Image,
 } from 'antd';
 import {
     PlusOutlined, EditOutlined, DeleteOutlined,
     ArrowUpOutlined, ArrowDownOutlined, HistoryOutlined,
-    BoxPlotOutlined,
+    BoxPlotOutlined, UploadOutlined, PictureOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -21,6 +21,7 @@ import {
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const CATEGORIES = ['raw_material', 'finished_good', 'consumable', 'tool', 'safety', 'other'];
 const UNITS = ['pcs', 'kg', 'm', 'm2', 'm3', 'ltr', 'roll', 'box', 'bag', 'sheet'];
@@ -43,6 +44,11 @@ const MaterialsList = () => {
     const [movementsLoading, setMovementsLoading] = useState(false);
     const [form] = Form.useForm();
     const [stockForm] = Form.useForm();
+
+    // Photo management
+    const [photoMaterial, setPhotoMaterial] = useState(null);
+    const [photosModalVisible, setPhotosModalVisible] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
     const fetchMaterials = async () => {
         setLoading(true);
@@ -143,6 +149,36 @@ const MaterialsList = () => {
         }
     };
 
+    const openPhotosModal = (material) => {
+        setPhotoMaterial(material);
+        setPhotosModalVisible(true);
+    };
+
+    const handleUploadInventoryPhoto = async ({ file }) => {
+        if (!photoMaterial) return;
+        setUploadingPhoto(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/inventory/${photoMaterial.uid}/photos`, {
+                method: 'POST',
+                body: formData,
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error('Upload failed');
+            const data = await res.json();
+            message.success('Photo uploaded');
+            setMaterials((prev) => prev.map((m) => m.uid === photoMaterial.uid ? { ...m, image_urls: data.image_urls } : m));
+            setPhotoMaterial((prev) => ({ ...prev, image_urls: data.image_urls }));
+        } catch {
+            message.error('Photo upload failed');
+        } finally {
+            setUploadingPhoto(false);
+        }
+        return false;
+    };
+
     const lowStockCount = materials.filter(m => m.current_stock <= m.minimum_stock).length;
     const outOfStockCount = materials.filter(m => m.current_stock <= 0).length;
     const totalValue = materials.reduce((sum, m) => sum + (m.current_stock * m.unit_cost), 0);
@@ -205,6 +241,12 @@ const MaterialsList = () => {
                         icon={<HistoryOutlined />}
                         onClick={() => openMovements(record)}
                         title="View Movements"
+                    />
+                    <Button
+                        size="small"
+                        icon={<PictureOutlined />}
+                        onClick={() => openPhotosModal(record)}
+                        title="Photos"
                     />
                     <Button
                         size="small"
@@ -453,6 +495,48 @@ const MaterialsList = () => {
                     )
                 }
             </Drawer>
+
+            {/* Photos Modal */}
+            <Modal
+                title={<Space><PictureOutlined /> Material Photos — {photoMaterial?.name}</Space>}
+                open={photosModalVisible}
+                onCancel={() => { setPhotosModalVisible(false); setPhotoMaterial(null); }}
+                footer={null}
+                width={600}
+            >
+                {photoMaterial && (
+                    <div>
+                        <Upload
+                            beforeUpload={(file) => { handleUploadInventoryPhoto({ file }); return false; }}
+                            showUploadList={false}
+                            accept="image/*"
+                            disabled={uploadingPhoto}
+                        >
+                            <Button icon={<UploadOutlined />} loading={uploadingPhoto} style={{ marginBottom: 16 }}>
+                                Upload Photo
+                            </Button>
+                        </Upload>
+                        {photoMaterial.image_urls && photoMaterial.image_urls.length > 0 ? (
+                            <Image.PreviewGroup>
+                                <Row gutter={[8, 8]}>
+                                    {photoMaterial.image_urls.map((url, idx) => (
+                                        <Col key={idx} span={8}>
+                                            <Image
+                                                src={`${API_BASE}${url}`}
+                                                style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8 }}
+                                            />
+                                        </Col>
+                                    ))}
+                                </Row>
+                            </Image.PreviewGroup>
+                        ) : (
+                            <div style={{ textAlign: 'center', color: '#999', padding: 24 }}>
+                                No photos uploaded yet
+                            </div>
+                        )}
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };
