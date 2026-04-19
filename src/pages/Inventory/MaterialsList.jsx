@@ -160,7 +160,7 @@ const MaterialsList = () => {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
             const res = await fetch(`${API_BASE}/inventory/${photoMaterial.uid}/photos`, {
                 method: 'POST',
                 body: formData,

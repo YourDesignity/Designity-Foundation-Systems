@@ -11,7 +11,11 @@ from backend.services.vehicles.vehicle_service import VehicleService
 from backend.services.vehicles.trip_log_service import TripLogService
 from backend.services.vehicles.maintenance_service import MaintenanceService
 
-router = APIRouter(prefix="/vehicles", tags=["Vehicle Management"])
+router = APIRouter(
+    prefix="/vehicles",
+    tags=["Vehicle Management"],
+    dependencies=[Depends(get_current_active_user)],
+)
 
 _vehicle_svc = VehicleService()
 _trip_svc = TripLogService()
