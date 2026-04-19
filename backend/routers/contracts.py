@@ -569,7 +569,7 @@ async def assign_employees(
             employee_designation=getattr(employee, "designation", None),
             contract_id=contract_id,
             project_id=contract.project_id,
-            site_id=contract.project_id or 0,
+            site_id=0,
             site_name=contract.project_name or "",
             assigned_date=datetime.now(),
             assignment_start=body.start_date or contract.start_date,
@@ -786,6 +786,8 @@ async def delete_contract_assignment(
     )
     return None
 
+
+@router.get("/{contract_id}/activity", response_model=List[Dict[str, Any]])
 async def get_contract_activity(
     contract_id: int,
     current_user: dict = Depends(get_current_active_user),

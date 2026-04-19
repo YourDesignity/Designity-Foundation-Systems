@@ -108,14 +108,18 @@ const InventoryPage = () => {
         price: values.price,
         supplier: values.supplier,
         status: values.stock === 0 ? "Out of Stock" : values.stock < 10 ? "Low Stock" : "In Stock",
+        project_id: values.project_id,
+        contract_id: values.contract_id,
+        site_id: values.site_id,
       };
 
       const created = await inventoryService.create(payload);
       const newUid = created?.uid;
 
-      // Upload images if any
+      // Upload images if any (best-effort, non-blocking)
       const fileList = values.images?.fileList || [];
       if (newUid && fileList.length > 0) {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         for (const fileItem of fileList) {
           if (fileItem.originFileObj) {
             const formData = new FormData();
@@ -123,9 +127,7 @@ const InventoryPage = () => {
             try {
               await fetch(`${API_BASE}/inventory/${newUid}/photos`, {
                 method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
               });
             } catch {
